@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_resume_builder/pages/resume_builder_split_view.dart';
+import 'package:flutter_resume_builder/constants/strings.dart';
+import 'package:flutter_resume_builder/pages/split_view.dart';
 
 void main() {
   runApp(const FlutterResumeBuilder());
@@ -12,9 +13,9 @@ class FlutterResumeBuilder extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Resume Builder',
+      title: Strings.flutterResumeBuilder,
       theme: ThemeData(primarySwatch: Colors.blue, brightness: Brightness.dark),
-      home: const ResumeBuilderSplitView(),
+      home: SplitView(),
     );
   }
 }
