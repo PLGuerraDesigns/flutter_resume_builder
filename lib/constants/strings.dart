@@ -52,4 +52,6 @@ class Strings {
   // Split view
   static const String recompile = 'RECOMPILE';
   static const String download = 'DOWNLOAD';
+  static const String form = 'Form';
+  static const String preview = 'Preview';
 }
