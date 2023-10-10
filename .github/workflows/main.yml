@@ -15,7 +15,7 @@ jobs:
               channel: 'stable'
       - run: flutter pub get
       # - run: flutter test
-      - run: flutter build web --release --web-renderer=canvaskit --base-href=/portfolio/
+      - run: flutter build web --release --web-renderer=canvaskit --base-href=/flutter_resume_builder/
 
       - name: Commit and push to published-site branch
         run: |
@@ -25,7 +25,7 @@ jobs:
           git init
           git config --global user.email plguerra@outlook.com
           git config --global user.name plguerradesigns
-          git remote add origin https://${{secrets.commit_secret}}@github.com/plguerradesigns/portfolio.git
+          git remote add origin https://${{secrets.commit_secret}}@github.com/plguerradesigns/flutter_resume_builder.git
           git fetch origin published-site
           git switch published-site
           cp -R ../web/* .
