@@ -1,94 +1,33 @@
 import 'package:flutter/cupertino.dart';
-import 'package:printing/printing.dart';
-import 'package:pdf/widgets.dart' as pdf;
 
+/// A education history entry.
 class Education extends ChangeNotifier {
-  late IconData _iconData;
-
-  late String _institution;
-
-  late String _degree;
-
-  late DateTime _startDate;
-
-  late DateTime _endDate;
-
-  late String _imageURL;
-
-  late pdf.ImageProvider _imageProvider;
-
-  late bool _showImage;
-
-  String get institution => _institution;
-
-  String get degree => _degree;
-
-  DateTime get startDate => _startDate;
-
-  DateTime get endDate => _endDate;
-
-  IconData get iconData => _iconData;
-
-  String get imageURL => _imageURL;
-
-  bool get showImage => _showImage;
-
-  pdf.ImageProvider get imageProvider => _imageProvider;
-
-  set showImage(bool showImage) {
-    _showImage = showImage;
-    notifyListeners();
+  Education({
+    String institution = '',
+    String degree = '',
+    String startDate = '',
+    String endDate = '',
+    String location = '',
+  }) {
+    institutionController.text = institution;
+    degreeController.text = degree;
+    startDateController.text = startDate;
+    endDateController.text = endDate;
+    locationController.text = location;
   }
 
-  set institution(String institution) {
-    _institution = institution;
-    notifyListeners();
-  }
+  /// The controller for the institution field.
+  TextEditingController institutionController = TextEditingController();
 
-  set degree(String degree) {
-    _degree = degree;
-    notifyListeners();
-  }
+  /// The controller for the degree field.
+  TextEditingController degreeController = TextEditingController();
 
-  set startDate(DateTime dateTime) {
-    _startDate = dateTime;
-    notifyListeners();
-  }
+  /// The controller for the start date field.
+  TextEditingController startDateController = TextEditingController();
 
-  set endDate(DateTime dateTime) {
-    _endDate = dateTime;
-    notifyListeners();
-  }
+  /// The controller for the end date field.
+  TextEditingController endDateController = TextEditingController();
 
-  set iconData(IconData icon) {
-    _iconData = icon;
-    _showImage = false;
-    notifyListeners();
-  }
-
-  loadImage(String url) async {
-    _imageURL = url;
-    try {
-      _imageProvider = await networkImage(url);
-      _showImage = true;
-      notifyListeners();
-      return true;
-    } catch (error) {
-      _imageURL = '';
-      _showImage = false;
-      notifyListeners();
-      return false;
-    }
-  }
-
-  Education({institution, degree, startDate, endDate, icon, imageURL}) {
-    this.institution = institution ??= "";
-    this.degree = degree ??= "";
-    this.startDate =
-        startDate ??= DateTime.now().subtract(const Duration(days: 365 * 4));
-    this.endDate = endDate ??= DateTime.now();
-    iconData = icon ??= CupertinoIcons.book;
-    _showImage = false;
-    loadImage(imageURL ??= '');
-  }
+  /// The controller for the location field.
+  TextEditingController locationController = TextEditingController();
 }

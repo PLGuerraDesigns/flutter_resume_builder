@@ -1,321 +1,377 @@
-import 'package:flutter_resume_builder/constants/strings.dart';
-import 'package:flutter_resume_builder/models/education.dart';
-import 'package:flutter_resume_builder/models/experience.dart';
-import 'package:flutter_resume_builder/models/resume.dart';
+import 'dart:typed_data';
+
+import 'package:flutter/cupertino.dart' as cupertino;
 import 'package:intl/intl.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 import 'package:printing/printing.dart';
 
-class PDFGenerator {
-  Resume resume;
+import '../constants/strings.dart';
+import '../models/education.dart';
+import '../models/experience.dart';
+import '../models/generic.dart';
+import '../models/resume.dart';
 
+/// Generates a PDF from a [Resume].
+class PDFGenerator {
   PDFGenerator({required this.resume});
 
-  generateResumeAsPDF() async {
-    final pdf = Document();
+  /// The resume to be generated as PDF.
+  Resume resume;
 
-    pdf.addPage(
-      Page(
-        theme: ThemeData.withFont(
-          base: await PdfGoogleFonts.robotoRegular(),
-          bold: await PdfGoogleFonts.robotoBold(),
-          icons: await PdfGoogleFonts.cupertinoIcons(),
-        ),
-        pageFormat: PdfPageFormat.letter,
-        margin: const EdgeInsets.only(top: 50, left: 50, right: 50, bottom: 25),
-        build: (Context context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _name(),
-              _location(),
-              _contactGrid(),
-              // SizedBox(height: 8),
-              // _summary(),
-              SizedBox(height: 8),
-              _sectionLabel(Strings.experience),
-              SizedBox(height: 8),
-              _listOfExperiences(),
-              Spacer(),
-              _sectionLabel(Strings.education),
-              SizedBox(height: 8),
-              _listOfEducation(),
-              Spacer(),
-              _footer(),
-            ],
-          );
-        },
-      ),
-    );
-    return await pdf.save();
-  }
-
+  /// A label for a section.
   Widget _sectionLabel(String text) {
-    return Text(text,
-        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold));
-  }
-
-  Widget _name() {
-    return Text(
-      resume.name,
-      style: const TextStyle(fontSize: 28),
-    );
-  }
-
-  Widget _location() {
-    return Text(
-      resume.location,
-      style: const TextStyle(fontSize: 12),
-    );
-  }
-
-  Widget _summary() {
-    return resume.summary.isEmpty
-        ? Container()
-        : Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              _sectionLabel(Strings.summary),
-              SizedBox(height: 8),
-              Text(
-                resume.summary,
-                style: const TextStyle(fontSize: 12),
-              ),
-            ],
-          );
-  }
-
-  Widget _contactGrid() {
-    return Column(
-      children: [
-        SizedBox(height: 10),
-        Table(
-          children: [
-            for (int iterator = 0;
-                iterator < resume.contactList.length;
-                iterator = iterator + 2)
-              TableRow(
-                verticalAlignment: TableCellVerticalAlignment.middle,
-                children: [
-                  resume.contactList[iterator].details.isEmpty
-                      ? Container()
-                      : resume.contactList[iterator].showImage
-                          ? Image(resume.contactList[iterator].imageProvider,
-                              width: 22, height: 22)
-                          : Icon(
-                              IconData(resume
-                                  .contactList[iterator].iconData.codePoint),
-                              size: 22,
-                              color: const PdfColor(0.65, 0.65, 0.65),
-                            ),
-                  Text(
-                    resume.contactList[iterator].details,
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                  iterator < resume.contactList.length - 1 &&
-                          resume.contactList[iterator + 1].details.isNotEmpty
-                      ? resume.contactList[iterator + 1].showImage
-                          ? Image(
-                              resume.contactList[iterator + 1].imageProvider,
-                              width: 22,
-                              height: 22)
-                          : Icon(
-                              IconData(resume.contactList[iterator + 1].iconData
-                                  .codePoint),
-                              size: 22,
-                              color: const PdfColor(0.65, 0.65, 0.65),
-                            )
-                      : Container(),
-                  Text(
-                    iterator < resume.contactList.length - 1
-                        ? resume.contactList[iterator + 1].details
-                        : "",
-                    style: const TextStyle(fontSize: 12),
-                  ),
-                ],
-              )
-          ],
-        ),
-      ],
-    );
-  }
-
-  Widget _listOfExperiences() {
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.stretch,
-      children: [
-        for (Experience experience in resume.experienceList)
-          _experienceDetails(experience)
-      ],
-    );
-  }
-
-  Widget _experienceDetails(Experience experience) {
-    return experience.position.isEmpty && experience.company.isEmpty
-        ? Container()
-        : Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              experience.showImage
-                  ? Image(experience.imageProvider, width: 22, height: 22)
-                  : Icon(
-                      IconData(experience.iconData.codePoint),
-                      size: 22,
-                      color: const PdfColor(0.65, 0.65, 0.65),
-                    ),
-              SizedBox(width: 8),
-              Flexible(
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    Text(
-                      experience.position,
-                      style:
-                          TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-                    ),
-                    Text(
-                      experience.company,
-                      style: const TextStyle(fontSize: 14),
-                    ),
-                    Text(
-                      _positionStartAndEndDate(experience),
-                      style: const TextStyle(fontSize: 12),
-                    ),
-                    SizedBox(height: 5),
-                    Padding(
-                      padding: const EdgeInsets.symmetric(horizontal: 2),
-                      child: Text(
-                        experience.description,
-                        style: const TextStyle(
-                          fontSize: 12,
-                          color: PdfColor(0.15, 0.15, 0.15),
-                        ),
-                      ),
-                    ),
-                    SizedBox(height: 15),
-                  ],
-                ),
-              ),
-            ],
-          );
-  }
-
-  String _positionStartAndEndDate(Experience experience) {
-    String lengthText =
-        "${DateFormat('MMM yyyy').format(experience.startDate)} - ";
-    bool present = false;
-
-    if (experience.endDate.difference(DateTime.now()).inDays >= 0) {
-      lengthText += "Present (";
-      present = true;
-    } else {
-      lengthText += "${DateFormat('MMM yyyy').format(experience.endDate)} (";
-    }
-
-    int years = ((experience.endDate.difference(experience.startDate).inDays /
-            30.417) ~/
-        12);
-    if (years > 0) {
-      lengthText += "$years year";
-      if (years > 1) {
-        lengthText += "s";
-      }
-      lengthText += " ";
-    }
-
-    int months =
-        (experience.endDate.difference(experience.startDate).inDays ~/ 30.417) -
-            (12 * years);
-    if (months > 0) {
-      lengthText += "$months month";
-    }
-    if (months > 1) {
-      lengthText += "s";
-    }
-    if (present) {
-      lengthText += "+";
-    }
-    lengthText += ")";
-
-    return lengthText;
-  }
-
-  Widget _listOfEducation() {
-    return Row(
-      children: [
-        for (Education education in resume.educationList)
-          _educationDetails(education)
-      ],
-    );
-  }
-
-  Widget _educationDetails(Education education) {
-    return Expanded(
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 5),
       child: Row(
-        children: [
-          education.showImage
-              ? Image(education.imageProvider, width: 24, height: 24)
-              : Icon(
-                  IconData(education.iconData.codePoint),
-                  color: const PdfColor(0.7, 0.7, 0.7),
-                ),
-          SizedBox(width: 10),
-          Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: [
-              Text(
-                education.institution,
-                style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
-              ),
-              Text(
-                education.degree,
-                style: const TextStyle(fontSize: 14),
-              ),
-              education.endDate.difference(DateTime.now()).inDays >= 0
-                  ? Text(
-                      '${DateFormat('MMM yyyy').format(education.startDate)} - Present',
-                      style: const TextStyle(fontSize: 12),
-                    )
-                  : Text(
-                      '${DateFormat('MMM yyyy').format(education.startDate)} - ${DateFormat('MMM yyyy').format(education.endDate)}',
-                      style: const TextStyle(fontSize: 12),
-                    ),
-            ],
-          )
+        children: <Widget>[
+          Text(
+            text,
+            style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: Divider(
+              indent: 8,
+              thickness: 0.5,
+              color: const PdfColor(0.45, 0.45, 0.45),
+            ),
+          ),
         ],
       ),
     );
   }
 
-  Widget _skillsList() {
-    return resume.skillList.isEmpty
-        ? Container()
-        : Column(crossAxisAlignment: CrossAxisAlignment.stretch, children: [
-            _sectionLabel(Strings.skills),
-            SizedBox(height: 10),
-            Wrap(
-              alignment: WrapAlignment.center,
-              children: [
-                for (int iterator = 0;
-                    iterator < resume.skillList.length;
-                    iterator++)
-                  Text(
-                    '${resume.skillList[iterator]}${iterator + 1 < resume.skillList.length ? " • " : ""}',
-                    style: const TextStyle(fontSize: 10),
-                  )
-              ],
-            )
-          ]);
+  /// The resume header.
+  ///
+  /// Includes the name, location, image, and contact details.
+  Widget _header() {
+    return Stack(
+      children: <Widget>[
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            _name(),
+            _location(),
+            SizedBox(height: 8),
+            _contactGrid(),
+          ],
+        ),
+        if (resume.logoAsBytes != null)
+          Align(
+            alignment: Alignment.centerRight,
+            child: Image(
+              MemoryImage(
+                resume.logoAsBytes!,
+              ),
+              width: 75,
+              height: 75,
+            ),
+          ),
+      ],
+    );
   }
 
+  /// The contact details of the user.
+  Widget _contactGrid() {
+    return Table(
+      children: <TableRow>[
+        for (int iterator = 0;
+            iterator < resume.contactList.length;
+            iterator = iterator + 2)
+          TableRow(
+            children: <Widget>[
+              if (resume.contactList[iterator].textController.text.isNotEmpty)
+                Icon(
+                  IconData(resume.contactList[iterator].iconData.codePoint),
+                  size: 16,
+                  color: const PdfColor(0.65, 0.65, 0.65),
+                )
+              else
+                Container(width: 1),
+              Text(
+                resume.contactList[iterator].textController.text,
+                style: const TextStyle(fontSize: 12),
+              ),
+              if (iterator < resume.contactList.length - 1 &&
+                  resume
+                      .contactList[iterator + 1].textController.text.isNotEmpty)
+                Icon(
+                  IconData(resume.contactList[iterator + 1].iconData.codePoint),
+                  size: 16,
+                  color: const PdfColor(0.65, 0.65, 0.65),
+                )
+              else
+                Container(),
+              Text(
+                iterator < resume.contactList.length - 1
+                    ? resume.contactList[iterator + 1].textController.text
+                    : '',
+                style: const TextStyle(fontSize: 12),
+              ),
+            ],
+          )
+      ],
+    );
+  }
+
+  /// The name of the user.
+  Widget _name() {
+    return Text(
+      resume.nameController.text,
+      style: const TextStyle(fontSize: 18),
+    );
+  }
+
+  /// The location of the user.
+  Widget _location() {
+    return Row(
+      children: <Widget>[
+        Icon(
+          IconData(cupertino.CupertinoIcons.map_pin_ellipse.codePoint),
+          size: 14,
+          color: const PdfColor(0.65, 0.65, 0.65),
+        ),
+        SizedBox(width: 4),
+        Text(
+          resume.locationController.text,
+          style: const TextStyle(fontSize: 12),
+        ),
+      ],
+    );
+  }
+
+  /// A date range in the format of `startDate - endDate`.
+  String _dateRange(String startDate, String endDate) {
+    if (startDate.isEmpty && endDate.isEmpty) {
+      return '';
+    } else if (startDate.isEmpty) {
+      return endDate;
+    } else if (endDate.isEmpty) {
+      return startDate;
+    } else {
+      return '$startDate - $endDate';
+    }
+  }
+
+  /// A custom section.
+  Widget _customSection(int index, {required String sectionName}) {
+    return resume.customSections.isEmpty
+        ? Container()
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              _sectionLabel(sectionName),
+              for (final Map<String, GenericEntry> genericSection
+                  in resume.customSections)
+                if (genericSection.keys.first == sectionName)
+                  _genericEntryDetails(genericSection.values.first)
+            ],
+          );
+  }
+
+  /// A generic entry.
+  Widget _genericEntryDetails(GenericEntry genericSection) {
+    return genericSection.titleController.text.isEmpty &&
+            genericSection.descriptionController.text.isEmpty
+        ? Container()
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              if (!(genericSection.titleController.text.isEmpty &&
+                  genericSection.startDateController.text.isEmpty &&
+                  genericSection.endDateController.text.isEmpty))
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      genericSection.titleController.text,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      _dateRange(
+                        genericSection.startDateController.text,
+                        genericSection.endDateController.text,
+                      ),
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              if (!(genericSection.subtitleController.text.isEmpty &&
+                  genericSection.locationController.text.isEmpty))
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      genericSection.subtitleController.text,
+                      style: TextStyle(fontWeight: FontWeight.bold),
+                    ),
+                    Text(
+                      genericSection.locationController.text,
+                      style: const TextStyle(fontSize: 12),
+                    ),
+                  ],
+                ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                child: Text(
+                  genericSection.descriptionController.text,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: PdfColor(0.15, 0.15, 0.15),
+                  ),
+                ),
+              ),
+            ],
+          );
+  }
+
+  /// The professional experience section.
+  Widget _experienceSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _sectionLabel(Strings.experience),
+        for (final Experience experience in resume.experiences)
+          _experienceEntryDetails(experience)
+      ],
+    );
+  }
+
+  /// An experience entry.
+  Widget _experienceEntryDetails(Experience experience) {
+    return experience.companyController.text.isEmpty &&
+            experience.positionController.text.isEmpty &&
+            experience.descriptionController.text.isEmpty
+        ? Container()
+        : Column(
+            children: <Widget>[
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: <Widget>[
+                  Text(
+                    experience.positionController.text,
+                    style: TextStyle(fontWeight: FontWeight.bold),
+                  ),
+                  Text(
+                    _dateRange(
+                      experience.startDateController.text,
+                      experience.endDateController.text,
+                    ),
+                    style: TextStyle(
+                      fontSize: 12,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ],
+              ),
+              if (experience.companyController.text.isNotEmpty &&
+                  experience.locationController.text.isNotEmpty)
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: <Widget>[
+                    Text(
+                      experience.companyController.text,
+                    ),
+                    Text(
+                      experience.locationController.text,
+                    ),
+                  ],
+                ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  Padding(
+                    padding:
+                        const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                    child: Text(
+                      experience.descriptionController.text,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: PdfColor(0.15, 0.15, 0.15),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          );
+  }
+
+  /// The education section.
+  Widget _educationSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: <Widget>[
+        _sectionLabel(Strings.education),
+        for (final Education education in resume.educationHistory)
+          _educationEntryDetails(education)
+      ],
+    );
+  }
+
+  /// An education entry.
+  Widget _educationEntryDetails(Education education) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+      child: Column(
+        children: <Widget>[
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(
+                education.degreeController.text,
+                style: TextStyle(fontWeight: FontWeight.bold),
+              ),
+              Text(
+                _dateRange(
+                  education.startDateController.text,
+                  education.endDateController.text,
+                ),
+                style: TextStyle(fontWeight: FontWeight.bold),
+              )
+            ],
+          ),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              Text(education.institutionController.text),
+              Text(education.locationController.text),
+            ],
+          ),
+        ],
+      ),
+    );
+  }
+
+  /// The skills section.
+  Widget _skillsList() {
+    return resume.skillTextControllers.isEmpty
+        ? Container()
+        : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+                _sectionLabel(Strings.skills),
+                Wrap(
+                  children: <Widget>[
+                    for (int iterator = 0;
+                        iterator < resume.skillTextControllers.length;
+                        iterator++)
+                      Text(
+                        '${resume.skillTextControllers[iterator].text}${iterator + 1 < resume.skillTextControllers.length ? " • " : ""}',
+                      )
+                  ],
+                )
+              ]);
+  }
+
+  /// The resume footer.
   Widget _footer() {
     return Stack(
-      children: [
+      children: <Widget>[
         Align(
           alignment: Alignment.bottomCenter,
           child: Text(
-            '${resume.name} - Page 1 / 1',
+            '${resume.nameController.text} - Page 1 / 1',
             style:
                 const TextStyle(color: PdfColor(0.5, 0.5, 0.5), fontSize: 10),
           ),
@@ -330,5 +386,61 @@ class PDFGenerator {
         ),
       ],
     );
+  }
+
+  /// The sections of the resume in the order they should be displayed.
+  List<Widget> _getOrderedSections() {
+    final List<Widget> sections = <Widget>[];
+    int sectionIndex = 0;
+    for (final String sectionName in resume.sectionOrder) {
+      if (!resume.sectionVisible(sectionName)) {
+        continue;
+      }
+      switch (sectionName) {
+        case Strings.skills:
+          sections.add(_skillsList());
+          break;
+        case Strings.experience:
+          sections.add(_experienceSection());
+          break;
+        case Strings.education:
+          sections.add(_educationSection());
+          break;
+        default:
+          sections.add(_customSection(sectionIndex, sectionName: sectionName));
+          break;
+      }
+      sectionIndex++;
+    }
+    return sections;
+  }
+
+  /// Generates the resume as a PDF.
+  Future<Uint8List> generateResumeAsPDF() async {
+    final Document pdf = Document();
+
+    pdf.addPage(
+      Page(
+        theme: ThemeData.withFont(
+          base: await PdfGoogleFonts.robotoRegular(),
+          bold: await PdfGoogleFonts.robotoBold(),
+          icons: await PdfGoogleFonts.cupertinoIcons(),
+        ),
+        pageFormat: PdfPageFormat.letter,
+        margin: const EdgeInsets.only(top: 50, left: 50, right: 50, bottom: 25),
+        build: (Context context) {
+          return Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              _header(),
+              ..._getOrderedSections(),
+              Spacer(),
+              _footer(),
+            ],
+          );
+        },
+      ),
+    );
+    return pdf.save();
   }
 }

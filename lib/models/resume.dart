@@ -1,146 +1,226 @@
-import 'dart:collection';
+import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import 'package:flutter_resume_builder/models/contact.dart';
-import 'package:flutter_resume_builder/models/education.dart';
-import 'package:flutter_resume_builder/models/experience.dart';
+import '../constants/strings.dart';
+import 'contact.dart';
+import 'education.dart';
+import 'experience.dart';
+import 'generic.dart';
 
+/// The resume being edited.
 class Resume extends ChangeNotifier {
-  final formKey = GlobalKey<FormBuilderState>();
-
-  late String _name;
-
-  late String _location;
-
-  late String _summary;
-
-  late List<Contact> _contactList = [];
-
-  late List<Experience> _experienceList = [];
-
-  late List<Education> _educationList = [];
-
-  late List<String> _skillList = [];
-
-  bool _showRecompileButton = true;
-
   Resume() {
-    name = '';
-    location = '';
-    summary = '';
-    _contactList = [Contact(), Contact()];
-    _experienceList = [Experience()];
-    _educationList = [Education(), Education()];
+    nameController.text = '';
+    locationController.text = '';
+    contactList = <Contact>[Contact(), Contact(), Contact(), Contact()];
+    experiences = <Experience>[
+      Experience(),
+      Experience(),
+    ];
+    educationHistory = <Education>[
+      Education(),
+      Education(),
+    ];
+    customSections = <Map<String, GenericEntry>>[
+      <String, GenericEntry>{
+        'Projects': GenericEntry(),
+      },
+    ];
+    sectionOrder = <String>[
+      Strings.skills,
+      Strings.experience,
+      'Projects',
+      Strings.education,
+    ];
   }
 
-  String get name => _name;
+  /// The form key for the resume.
+  final GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
 
-  bool get showRecompileButton => _showRecompileButton;
+  /// The controller for the name field.
+  TextEditingController nameController = TextEditingController();
 
-  String get location => _location;
+  /// The controller for the location field.
+  TextEditingController locationController = TextEditingController();
 
-  String get summary => _summary;
+  /// The list of contacts.
+  List<Contact> contactList = <Contact>[];
 
-  UnmodifiableListView<Experience> get experienceList =>
-      UnmodifiableListView(_experienceList);
+  /// The list of professional experiences.
+  List<Experience> experiences = <Experience>[];
 
-  UnmodifiableListView<Education> get educationList =>
-      UnmodifiableListView(_educationList);
+  /// The educational history.
+  List<Education> educationHistory = <Education>[];
 
-  UnmodifiableListView<Contact> get contactList =>
-      UnmodifiableListView(_contactList);
+  /// The list of skills.
+  List<TextEditingController> skillTextControllers = <TextEditingController>[];
 
-  UnmodifiableListView<String> get skillList =>
-      UnmodifiableListView(_skillList);
+  /// The list of custom (user-defined) sections.
+  List<Map<String, GenericEntry>> customSections =
+      <Map<String, GenericEntry>>[];
 
-  set contactList(List<Contact> contactList) {
-    _contactList = contactList;
-    attachContactInfoListListeners();
+  /// The order of the sections.
+  List<String> sectionOrder = <String>[];
+
+  /// The logo as bytes.
+  Uint8List? logoAsBytes;
+
+  /// The list of hidden sections.
+  final List<String> _hiddenSections = <String>[];
+
+  /// Whether the section is visible.
+  bool sectionVisible(String sectionName) {
+    return !_hiddenSections.contains(sectionName);
   }
 
-  set experienceList(List<Experience> experienceList) {
-    _experienceList = experienceList;
-    attachExperienceListListeners();
-  }
-
-  set educationList(List<Education> educationList) {
-    _educationList = educationList;
-    attachEducationListListeners();
-  }
-
-  set skillList(List<String> skillList) {
-    _skillList = skillList;
-    notifyListeners();
-  }
-
-  set name(String name) {
-    _name = name;
-    notifyListeners();
-  }
-
-  set summary(String summary) {
-    _summary = summary;
-    notifyListeners();
-  }
-
-  set showRecompileButton(bool value) {
-    _showRecompileButton = value;
-    notifyListeners();
-  }
-
-  set location(String location) {
-    _location = location;
-    notifyListeners();
-  }
-
-  void addContact() {
-    if (_contactList.length < 4) {
-      _contactList.add(Contact());
-      notifyListeners();
-    }
-  }
-
+  /// Add a new professional experience entry.
   void addExperience() {
-    if (_experienceList.length < 4) {
-      _experienceList.add(Experience());
-      notifyListeners();
-    }
+    experiences.add(Experience());
+    notifyListeners();
   }
 
+  /// Add a new education entry.
   void addEducation() {
-    if (_educationList.length < 4) {
-      _educationList.add(Education());
-      notifyListeners();
-    }
+    educationHistory.add(Education());
+    notifyListeners();
   }
 
-  void attachContactInfoListListeners() {
-    for (var element in contactList) {
-      if (!element.hasListeners) {
-        element.addListener(() {
-          notifyListeners();
-        });
-      }
-    }
+  /// Create a new custom section.
+  void addCustomSection() {
+    customSections.add(<String, GenericEntry>{
+      'Title ${customSections.length + 1}': GenericEntry(),
+    });
+    sectionOrder.add('Title ${customSections.length}');
+    notifyListeners();
   }
 
-  void attachExperienceListListeners() {
-    for (var element in experienceList) {
-      if (!element.hasListeners) {
-        element.addListener(() {
-          notifyListeners();
-        });
-      }
+  /// Toggle the visibility of a section.
+  void toggleSectionVisibility(String sectionName) {
+    if (_hiddenSections.contains(sectionName)) {
+      _hiddenSections.remove(sectionName);
+    } else {
+      _hiddenSections.add(sectionName);
     }
+    notifyListeners();
   }
 
-  void attachEducationListListeners() {
-    for (var element in educationList) {
-      if (!element.hasListeners) {
-        element.addListener(() {
-          notifyListeners();
-        });
+  /// Rename a custom section.
+  void renameCustomSection(String oldName, String newName) {
+    final int index = sectionOrder.indexOf(oldName);
+    sectionOrder.removeAt(index);
+    sectionOrder.insert(index, newName);
+    for (final Map<String, GenericEntry> element in customSections) {
+      if (element.containsKey(oldName)) {
+        final Map<String, GenericEntry> newMap = <String, GenericEntry>{
+          newName: element[oldName]!
+        };
+        element.remove(oldName);
+        element.addAll(newMap);
       }
     }
+    notifyListeners();
+  }
+
+  /// Add a logo to the resume.
+  void addLogo(Uint8List logoAsBytes) {
+    this.logoAsBytes = logoAsBytes;
+    notifyListeners();
+  }
+
+  /// Whether the section can be moved up.
+  bool moveUpAllowed(String sectionName) {
+    return sectionOrder.indexOf(sectionName) > 0;
+  }
+
+  /// Whether the section can be moved down.
+  bool moveDownAllowed(String sectionName) {
+    return sectionOrder.indexOf(sectionName) < sectionOrder.length - 1;
+  }
+
+  /// Whether the section can be removed. (Custom sections only)
+  bool removeAllowed(String sectionName) {
+    return customSections
+        .where((Map<String, GenericEntry> element) =>
+            element.containsKey(sectionName))
+        .isNotEmpty;
+  }
+
+  /// Move the section up.
+  void moveUp(String sectionName) {
+    final int index = sectionOrder.indexOf(sectionName);
+    if (index <= 0) {
+      return;
+    }
+    sectionOrder.removeAt(index);
+    sectionOrder.insert(index - 1, sectionName);
+    notifyListeners();
+  }
+
+  /// Move the section down.
+  void moveDown(String sectionName) {
+    final int index = sectionOrder.indexOf(sectionName);
+    if (index >= sectionOrder.length - 1) {
+      return;
+    }
+    sectionOrder.removeAt(index);
+    sectionOrder.insert(index + 1, sectionName);
+    notifyListeners();
+  }
+
+  /// Rearrange the contact info list.
+  void onReorderContactInfoList(int oldIndex, int newIndex) {
+    final Contact item = contactList.removeAt(oldIndex);
+    contactList.insert(newIndex, item);
+    notifyListeners();
+  }
+
+  /// Rearrange the skills list.
+  void onReorderSkillsList(int oldIndex, int newIndex) {
+    final String item = skillTextControllers.removeAt(oldIndex).text;
+    skillTextControllers.insert(newIndex, TextEditingController(text: item));
+    notifyListeners();
+  }
+
+  /// Rearrange the experience list.
+  void onReorderExperienceList(int oldIndex, int newIndex) {
+    newIndex = newIndex - 1;
+    if (newIndex < 0) {
+      newIndex = 0;
+    }
+    final Experience item = experiences.removeAt(oldIndex);
+    experiences.insert(newIndex, item);
+    notifyListeners();
+  }
+
+  /// Rearrange the education list.
+  void onReorderEducationList(int oldIndex, int newIndex) {
+    newIndex = newIndex - 1;
+    if (newIndex < 0) {
+      newIndex = 0;
+    }
+    final Education item = educationHistory.removeAt(oldIndex);
+    educationHistory.insert(newIndex, item);
+    notifyListeners();
+  }
+
+  /// Rearrange a custom section list.
+  void onReorderCustomSectionList(int oldIndex, int newIndex) {
+    final Map<String, GenericEntry> item = customSections.removeAt(oldIndex);
+    customSections.insert(newIndex, item);
+    notifyListeners();
+  }
+
+  /// Delete a custom section.
+  void onDeleteCustomSection(String sectionName) {
+    sectionOrder.remove(sectionName);
+    customSections.removeWhere((Map<String, GenericEntry> element) =>
+        element.containsKey(sectionName));
+
+    notifyListeners();
+  }
+
+  /// Rebuild the resume/UI.
+  void rebuild() {
+    notifyListeners();
   }
 }

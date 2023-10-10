@@ -1,16 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_spinkit/flutter_spinkit.dart';
 
+/// A spinner that uses the Flutter logo.
 class FlutterSpinner extends StatelessWidget {
   const FlutterSpinner({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return Opacity(
+    return const Opacity(
       opacity: 0.5,
       child: Stack(
         alignment: Alignment.center,
-        children: const [
+        children: <Widget>[
           Padding(
             padding: EdgeInsets.only(right: 8.0),
             child: FlutterLogo(

@@ -1,18 +1,17 @@
 import 'package:flutter/material.dart';
 
-class CustomIconButton extends StatelessWidget {
-  const CustomIconButton({
-    Key? key,
+/// A button that displays an icon. The icon can be changed.
+class IconPicker extends StatelessWidget {
+  const IconPicker({
+    super.key,
     this.iconData,
-    this.imageURL,
     required this.onPressed,
-    required this.showImage,
-  }) : super(key: key);
+  });
 
-  final bool showImage;
+  /// The icon to display.
   final IconData? iconData;
-  final String? imageURL;
 
+  /// The callback when the user presses the button.
   final Function()? onPressed;
 
   @override
@@ -25,10 +24,10 @@ class CustomIconButton extends StatelessWidget {
         borderRadius: BorderRadius.circular(10),
       ),
       child: Padding(
-        padding: const EdgeInsets.all(3.0),
+        padding: const EdgeInsets.all(6.0),
         child: IconButton(
           onPressed: onPressed,
-          icon: showImage ? Image.network(imageURL!) : Icon(iconData),
+          icon: Icon(iconData),
         ),
       ),
     );
