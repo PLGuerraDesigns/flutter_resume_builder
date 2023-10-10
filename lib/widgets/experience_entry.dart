@@ -12,6 +12,7 @@ class ExperienceEntry extends StatefulWidget {
     super.key,
     required this.experience,
     required this.onSubmitted,
+    required this.portrait,
   });
 
   /// The experience to use.
@@ -20,6 +21,9 @@ class ExperienceEntry extends StatefulWidget {
   /// The callback when the user submits the text field.
   final Function(String?)? onSubmitted;
 
+  /// Whether the layout is portrait or not.
+  final bool portrait;
+
   @override
   State<StatefulWidget> createState() => ExperienceEntryState();
 }
@@ -27,6 +31,18 @@ class ExperienceEntry extends StatefulWidget {
 class ExperienceEntryState extends State<ExperienceEntry> {
   /// The callback when the user submits the text field.
   Function(String?)? get onSubmitted => widget.onSubmitted;
+
+  /// Returns the layout based on the orientation.
+  Widget _responsiveLayout({required List<Widget> children}) {
+    if (widget.portrait) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      );
+    }
+    return Row(children: children);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,17 +53,17 @@ class ExperienceEntryState extends State<ExperienceEntry> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             const SizedBox(height: 4),
-            Row(
+            _responsiveLayout(
               children: <Widget>[
-                Expanded(
+                Flexible(
                   child: GenericTextField(
                     label: Strings.position,
                     onSubmitted: onSubmitted,
                     controller: widget.experience.positionController,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
+                const SizedBox(width: 10, height: 10),
+                Flexible(
                   child: DateRangeEntry(
                     startDateController: widget.experience.startDateController,
                     endDateController: widget.experience.endDateController,
@@ -56,10 +72,10 @@ class ExperienceEntryState extends State<ExperienceEntry> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
+            const SizedBox(height: 10),
+            _responsiveLayout(
               children: <Widget>[
-                Expanded(
+                Flexible(
                   flex: 2,
                   child: GenericTextField(
                     label: Strings.company,
@@ -67,8 +83,8 @@ class ExperienceEntryState extends State<ExperienceEntry> {
                     controller: widget.experience.companyController,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
+                const SizedBox(width: 10, height: 10),
+                Flexible(
                   child: GenericTextField(
                     label: Strings.location,
                     onSubmitted: onSubmitted,
@@ -77,7 +93,7 @@ class ExperienceEntryState extends State<ExperienceEntry> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 10),
             GenericTextField(
               label: Strings.jobDescription,
               controller: widget.experience.descriptionController,

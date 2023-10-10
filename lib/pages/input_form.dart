@@ -23,19 +23,19 @@ import '../widgets/image_file_picker.dart';
 
 /// The input form for the resume.
 class InputForm extends StatefulWidget {
-  const InputForm({super.key});
+  const InputForm({
+    super.key,
+    this.portrait = false,
+  });
+
+  /// Whether the layout is portrait or not.
+  final bool portrait;
 
   @override
   State<InputForm> createState() => _InputFormState();
 }
 
 class _InputFormState extends State<InputForm> {
-  /// The key for the contact section.
-  final GlobalKey<State<StatefulWidget>> _contactSectionKey = GlobalKey();
-
-  /// The key for the skill section.
-  final GlobalKey<State<StatefulWidget>> _skillSectionKey = GlobalKey();
-
   /// Form fields for requesting the user's name, location, and a logo.
   Widget _header(Resume resume) {
     return Row(
@@ -101,6 +101,7 @@ class _InputFormState extends State<InputForm> {
         children: <Widget>[
           if (titleEditable)
             Expanded(
+              flex: 2,
               child: GenericTextField(
                 key: UniqueKey(),
                 label: '',
@@ -120,7 +121,6 @@ class _InputFormState extends State<InputForm> {
               ),
             ),
           const Expanded(
-            flex: 2,
             child: Divider(
               indent: 10,
               endIndent: 10,
@@ -201,15 +201,25 @@ class _InputFormState extends State<InputForm> {
   Widget _contactSection(Resume resume) {
     return ReorderableBuilder(
         longPressDelay: const Duration(milliseconds: 250),
-        key: _contactSectionKey,
+        enableScrollingWhileDragging: false,
+        dragChildBoxDecoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: const <BoxShadow>[
+            BoxShadow(
+              color: Colors.black54,
+              blurRadius: 10,
+              offset: Offset(-2, 5),
+            ),
+          ],
+        ),
         builder: (List<Widget> children) {
           return GridView.custom(
-            key: _contactSectionKey,
+            physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
             childrenDelegate: SliverChildListDelegate(children),
-            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               mainAxisExtent: 74,
-              crossAxisCount: 2,
+              crossAxisCount: widget.portrait ? 1 : 2,
               mainAxisSpacing: 10,
               crossAxisSpacing: 10,
             ),
@@ -259,8 +269,17 @@ class _InputFormState extends State<InputForm> {
           opacity: resume.sectionVisible(Strings.skills) ? 1 : 0.5,
           child: ReorderableBuilder(
             longPressDelay: const Duration(milliseconds: 250),
-            key: _skillSectionKey,
             enableScrollingWhileDragging: false,
+            dragChildBoxDecoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              boxShadow: const <BoxShadow>[
+                BoxShadow(
+                  color: Colors.black54,
+                  blurRadius: 10,
+                  offset: Offset(-2, 5),
+                ),
+              ],
+            ),
             onReorder: (List<OrderUpdateEntity> orderUpdateEntities) {
               for (final OrderUpdateEntity element in orderUpdateEntities) {
                 resume.onReorderSkillsList(element.oldIndex, element.newIndex);
@@ -269,12 +288,11 @@ class _InputFormState extends State<InputForm> {
             builder: (List<Widget> children) {
               return GridView.custom(
                 physics: const NeverScrollableScrollPhysics(),
-                key: _skillSectionKey,
                 shrinkWrap: true,
                 childrenDelegate: SliverChildListDelegate(children),
-                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
                   mainAxisExtent: 74,
-                  crossAxisCount: 5,
+                  crossAxisCount: widget.portrait ? 2 : 5,
                   mainAxisSpacing: 10,
                   crossAxisSpacing: 10,
                 ),
@@ -318,16 +336,18 @@ class _InputFormState extends State<InputForm> {
         ),
         ReorderableList(
           itemCount: resume.experiences.length,
+          physics: const NeverScrollableScrollPhysics(),
           shrinkWrap: true,
           proxyDecorator: _proxyDecorator,
           onReorder: (int oldIndex, int newIndex) {
             resume.onReorderExperienceList(oldIndex, newIndex);
           },
           itemBuilder: (BuildContext context, int index) {
-            return ReorderableDragStartListener(
+            return ReorderableDelayedDragStartListener(
               key: Key('${Strings.experience}$index'),
               index: index,
               child: ExperienceEntry(
+                portrait: widget.portrait,
                 experience: resume.experiences[index],
                 onSubmitted: (_) {
                   resume.rebuild();
@@ -356,15 +376,17 @@ class _InputFormState extends State<InputForm> {
         ReorderableList(
           itemCount: resume.educationHistory.length,
           shrinkWrap: true,
+          physics: const NeverScrollableScrollPhysics(),
           proxyDecorator: _proxyDecorator,
           onReorder: (int oldIndex, int newIndex) {
             resume.onReorderEducationList(oldIndex, newIndex);
           },
           itemBuilder: (BuildContext context, int index) {
-            return ReorderableDragStartListener(
+            return ReorderableDelayedDragStartListener(
               key: Key('${Strings.education}$index'),
               index: index,
               child: EducationEntry(
+                portrait: widget.portrait,
                 education: resume.educationHistory[index],
                 onSubmitted: (_) {
                   resume.rebuild();
@@ -409,14 +431,16 @@ class _InputFormState extends State<InputForm> {
             itemCount: genericSection.length,
             shrinkWrap: true,
             proxyDecorator: _proxyDecorator,
+            physics: const NeverScrollableScrollPhysics(),
             onReorder: (int oldIndex, int newIndex) {
               resume.onReorderCustomSectionList(oldIndex, newIndex);
             },
             itemBuilder: (BuildContext context, int index) {
-              return ReorderableDragStartListener(
+              return ReorderableDelayedDragStartListener(
                 key: Key('$title$index'),
                 index: index,
                 child: CustomEntry(
+                  portrait: widget.portrait,
                   genericSection: genericSection[index],
                   onSubmitted: (_) {
                     resume.rebuild();
@@ -443,6 +467,9 @@ class _InputFormState extends State<InputForm> {
             elevation: elevation,
             color: Colors.transparent,
             shadowColor: Colors.black54,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(20),
+            ),
             child: child,
           ),
         );

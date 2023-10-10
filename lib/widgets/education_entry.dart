@@ -12,6 +12,7 @@ class EducationEntry extends StatefulWidget {
     super.key,
     required this.education,
     required this.onSubmitted,
+    required this.portrait,
   });
 
   /// The callback when the user submits the text field.
@@ -20,6 +21,9 @@ class EducationEntry extends StatefulWidget {
   /// The education to use.
   final Education education;
 
+  /// Whether the layout is portrait or not.
+  final bool portrait;
+
   @override
   State<StatefulWidget> createState() => EducationEntryState();
 }
@@ -27,6 +31,18 @@ class EducationEntry extends StatefulWidget {
 class EducationEntryState extends State<EducationEntry> {
   /// The callback when the user submits the text field.
   Function(String?)? get onSubmitted => widget.onSubmitted;
+
+  /// Returns the layout based on the orientation.
+  Widget _responsiveLayout({required List<Widget> children}) {
+    if (widget.portrait) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      );
+    }
+    return Row(children: children);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,17 +53,17 @@ class EducationEntryState extends State<EducationEntry> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             const SizedBox(height: 4),
-            Row(
+            _responsiveLayout(
               children: <Widget>[
-                Expanded(
+                Flexible(
                   child: GenericTextField(
                     label: Strings.institution,
                     controller: widget.education.institutionController,
                     onSubmitted: onSubmitted,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
+                const SizedBox(width: 10, height: 10),
+                Flexible(
                   child: DateRangeEntry(
                     startDateController: widget.education.startDateController,
                     endDateController: widget.education.endDateController,
@@ -56,18 +72,18 @@ class EducationEntryState extends State<EducationEntry> {
                 ),
               ],
             ),
-            const SizedBox(height: 16),
-            Row(
+            const SizedBox(height: 10),
+            _responsiveLayout(
               children: <Widget>[
-                Expanded(
+                Flexible(
                   child: GenericTextField(
                     label: Strings.degree,
                     controller: widget.education.degreeController,
                     onSubmitted: onSubmitted,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
+                const SizedBox(width: 10, height: 10),
+                Flexible(
                   child: GenericTextField(
                     label: Strings.location,
                     controller: widget.education.locationController,
