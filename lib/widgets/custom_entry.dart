@@ -12,6 +12,7 @@ class CustomEntry extends StatefulWidget {
     super.key,
     required this.genericSection,
     required this.onSubmitted,
+    required this.portrait,
   });
 
   /// The generic section to use.
@@ -20,6 +21,9 @@ class CustomEntry extends StatefulWidget {
   /// The callback when the user submits the text field.
   final Function(String?)? onSubmitted;
 
+  /// Whether the layout is portrait or not.
+  final bool portrait;
+
   @override
   State<StatefulWidget> createState() => CustomEntryState();
 }
@@ -27,6 +31,18 @@ class CustomEntry extends StatefulWidget {
 class CustomEntryState extends State<CustomEntry> {
   /// The callback when the user submits the text field.
   Function(String?)? get onSubmitted => widget.onSubmitted;
+
+  // Returns the layout based on the orientation.
+  Widget _responsiveLayout({required List<Widget> children}) {
+    if (widget.portrait) {
+      return Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: children,
+      );
+    }
+    return Row(children: children);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -37,17 +53,17 @@ class CustomEntryState extends State<CustomEntry> {
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: <Widget>[
             const SizedBox(height: 4),
-            Row(
+            _responsiveLayout(
               children: <Widget>[
-                Expanded(
+                Flexible(
                   child: GenericTextField(
                     label: Strings.title,
                     onSubmitted: onSubmitted,
                     controller: widget.genericSection.titleController,
                   ),
                 ),
-                const SizedBox(width: 8),
-                Expanded(
+                const SizedBox(width: 10, height: 10),
+                Flexible(
                   child: DateRangeEntry(
                     startDateController:
                         widget.genericSection.startDateController,
@@ -58,9 +74,9 @@ class CustomEntryState extends State<CustomEntry> {
               ],
             ),
             const SizedBox(height: 10),
-            Row(
+            _responsiveLayout(
               children: <Widget>[
-                Expanded(
+                Flexible(
                   flex: 2,
                   child: GenericTextField(
                     label: Strings.subtitle,
@@ -68,8 +84,8 @@ class CustomEntryState extends State<CustomEntry> {
                     controller: widget.genericSection.subtitleController,
                   ),
                 ),
-                const SizedBox(width: 10),
-                Expanded(
+                const SizedBox(width: 10, height: 10),
+                Flexible(
                   child: GenericTextField(
                     label: Strings.location,
                     controller: widget.genericSection.locationController,

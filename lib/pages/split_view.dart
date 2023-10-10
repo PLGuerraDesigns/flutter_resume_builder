@@ -1,11 +1,7 @@
-import 'dart:convert';
-import 'dart:html' as html;
-
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
-import 'package:url_launcher/url_launcher.dart';
 
 import '../constants/strings.dart';
 import '../models/contact.dart';
@@ -13,7 +9,11 @@ import '../models/education.dart';
 import '../models/experience.dart';
 import '../models/generic.dart';
 import '../models/resume.dart';
+import '../services/file_handler.dart';
 import '../services/pdf_generator.dart';
+import '../services/project_info.dart';
+import '../services/redirect_handler.dart';
+import '../widgets/portrait_drawer.dart';
 import 'input_form.dart';
 import 'pdf_viewer.dart';
 
@@ -28,9 +28,13 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
   /// The resume to use.
   final Resume _resume = Resume();
 
+  /// The project info handler.
+  ProjectVersionInfoHandler projectInfoHandler = ProjectVersionInfoHandler();
+
   /// The PDF generator.
   late PDFGenerator pdfGenerator;
 
+  /// The tab controller.
   TabController? _tabController;
 
   /// Populates the resume with sample data.
@@ -112,27 +116,15 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
     ];
   }
 
-  /// The PDF viewer.
-  Widget _pdfViewer() {
-    return Stack(
-      children: <Widget>[
-        PDFViewer(pdfGenerator: pdfGenerator),
-        Positioned(
-          top: 10,
-          right: 10,
-          child: _recompileButton(),
-        ),
-      ],
-    );
-  }
-
   /// The portrait layout of the split view.
   Widget _portraitLayout() {
     return TabBarView(
       controller: _tabController,
       children: <Widget>[
-        const InputForm(),
-        _pdfViewer(),
+        const InputForm(
+          portrait: true,
+        ),
+        PDFViewer(pdfGenerator: pdfGenerator),
       ],
     );
   }
@@ -142,7 +134,18 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
     return Row(
       children: <Widget>[
         const Expanded(child: InputForm()),
-        Expanded(child: _pdfViewer()),
+        Expanded(
+          child: Stack(
+            children: <Widget>[
+              PDFViewer(pdfGenerator: pdfGenerator),
+              Positioned(
+                top: 10,
+                right: 10,
+                child: _recompileButton(),
+              ),
+            ],
+          ),
+        ),
       ],
     );
   }
@@ -163,7 +166,7 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
     );
   }
 
-  /// A button that recompiles the resume.
+  /// A button to save and recompile the resume.
   Widget _recompileButton() {
     return MaterialButton(
       color: Colors.green[700],
@@ -191,42 +194,178 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
     );
   }
 
-  /// A drawer that provides various options.
-  Widget _drawer(BuildContext context) {
-    return Drawer(
-      backgroundColor: Theme.of(context).colorScheme.surface,
-      child: Column(
-        children: <Widget>[
-          DrawerHeader(
-            margin: EdgeInsets.zero,
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.end,
-              crossAxisAlignment: CrossAxisAlignment.stretch,
+  /// A list tile option for the drawer and popup menu.
+  Widget _listOption({
+    required BuildContext context,
+    required String title,
+    required IconData iconData,
+    required Function() onTap,
+  }) {
+    return ListTile(
+      leading: Icon(
+        iconData,
+        color: Theme.of(context).colorScheme.onSurface,
+      ),
+      title: Text(
+        title.toUpperCase(),
+        style: Theme.of(context).textTheme.labelSmall,
+      ),
+      onTap: onTap,
+    );
+  }
+
+  /// Displays an about dialog containing information about the project and
+  /// more options.
+  void _showAboutDialog({required bool portraitMode}) {
+    showDialog(
+        context: context,
+        builder: (BuildContext context) {
+          return AlertDialog(
+            insetPadding: portraitMode
+                ? const EdgeInsets.symmetric(horizontal: 30.0, vertical: 24.0)
+                : const EdgeInsets.symmetric(horizontal: 150, vertical: 100),
+            title: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
               children: <Widget>[
-                TextButton(
-                  onPressed: () async {
-                    if (await canLaunchUrl(Uri.parse(Strings.flutterUrl))) {
-                      launchUrl(
-                        Uri.parse(Strings.flutterUrl),
-                      );
-                    }
-                  },
-                  child: Text(
-                    Strings.poweredByFlutter.toUpperCase(),
-                    style: Theme.of(context).textTheme.labelSmall!.copyWith(
-                          color: Theme.of(context)
-                              .colorScheme
-                              .onSurface
-                              .withOpacity(0.5),
-                        ),
-                  ),
+                Image.asset(
+                  Strings.iconPath,
+                  height: 50,
+                  width: 50,
+                ),
+                const SizedBox(width: 10),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: <Widget>[
+                    Text(
+                      Strings.flutterResumeBuilder,
+                      style: Theme.of(context).textTheme.titleLarge,
+                    ),
+                    Text(
+                      '${projectInfoHandler.version} (${projectInfoHandler.buildNumber})',
+                      style: Theme.of(context).textTheme.bodyMedium,
+                    ),
+                  ],
                 ),
               ],
             ),
+            content: const Text(
+              Strings.projectInfo,
+              textAlign: TextAlign.center,
+            ),
+            actions: <Widget>[
+              TextButton(
+                child: Text(Strings.moreProjects.toUpperCase()),
+                onPressed: () {
+                  Navigator.pop(context);
+                  RedirectHandler.openUrl(Strings.portfolioUrl);
+                },
+              ),
+              TextButton(
+                child: Text(Strings.licenses.toUpperCase()),
+                onPressed: () {
+                  Navigator.pop(context);
+                  showLicensePage(
+                    context: context,
+                    applicationName: Strings.flutterResumeBuilder,
+                    applicationVersion: projectInfoHandler.version,
+                    applicationLegalese: Strings.copyRight('2021'),
+                  );
+                },
+              ),
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text(Strings.ok),
+              ),
+            ],
+          );
+        });
+  }
+
+  /// The action items to display in the drawer or popup menu.
+  List<Widget> _actionItems({required bool portraitMode}) {
+    if (portraitMode) {
+      return <Widget>[
+        _listOption(
+          context: context,
+          title: Strings.downloadPDF,
+          iconData: Icons.download,
+          onTap: () {
+            Navigator.pop(context);
+            FileHandler().savePDF(pdfGenerator);
+          },
+        ),
+        _listOption(
+          context: context,
+          title: Strings.aboutThisProject.toUpperCase(),
+          iconData: Icons.info,
+          onTap: () {
+            Navigator.pop(context);
+            _showAboutDialog(portraitMode: portraitMode);
+          },
+        ),
+        _listOption(
+          context: context,
+          title: Strings.contributeToThisProject.toUpperCase(),
+          iconData: Icons.code,
+          onTap: () {
+            Navigator.pop(context);
+            RedirectHandler.openUrl(Strings.sourceCodeUrl);
+          },
+        ),
+        _listOption(
+          context: context,
+          title: Strings.projectDonation.toUpperCase(),
+          iconData: Icons.attach_money,
+          onTap: () {
+            Navigator.pop(context);
+            RedirectHandler.openUrl(Strings.sponsorUrl);
+          },
+        ),
+      ];
+    }
+    return <Widget>[
+      IconButton(
+        icon: const Icon(Icons.download),
+        tooltip: Strings.downloadPDF,
+        onPressed: () => FileHandler().savePDF(pdfGenerator),
+      ),
+      IconButton(
+        icon: const Icon(Icons.info),
+        tooltip: Strings.aboutThisProject.toUpperCase(),
+        onPressed: () => _showAboutDialog(portraitMode: portraitMode),
+      ),
+      PopupMenuButton<String>(
+        tooltip: Strings.moreOptions.toUpperCase(),
+        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
+          PopupMenuItem<String>(
+            padding: EdgeInsets.zero,
+            child: _listOption(
+                context: context,
+                title: Strings.contributeToThisProject.toUpperCase(),
+                iconData: Icons.code,
+                onTap: () {
+                  Navigator.pop(context);
+                  RedirectHandler.openUrl(Strings.sourceCodeUrl);
+                }),
+            onTap: () {},
+          ),
+          PopupMenuItem<String>(
+            padding: EdgeInsets.zero,
+            child: _listOption(
+              context: context,
+              title: Strings.projectDonation.toUpperCase(),
+              iconData: Icons.attach_money,
+              onTap: () {
+                Navigator.pop(context);
+                RedirectHandler.openUrl(Strings.sponsorUrl);
+              },
+            ),
+            onTap: () {},
           ),
         ],
       ),
-    );
+      const SizedBox(width: 10),
+    ];
   }
 
   @override
@@ -244,8 +383,12 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
       child: OrientationBuilder(
         builder: (BuildContext context, Orientation orientation) {
           return Scaffold(
-            drawer:
-                orientation == Orientation.landscape ? null : _drawer(context),
+            drawer: orientation == Orientation.landscape
+                ? null
+                : PortraitDrawer(
+                    pdfGenerator: pdfGenerator,
+                    actionItems: _actionItems(portraitMode: true),
+                  ),
             appBar: AppBar(
               bottom: orientation == Orientation.landscape
                   ? null
@@ -258,13 +401,8 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
                   const Text(Strings.resumeBuilder),
                   if (orientation == Orientation.landscape)
                     TextButton(
-                      onPressed: () async {
-                        if (await canLaunchUrl(Uri.parse(Strings.flutterUrl))) {
-                          launchUrl(
-                            Uri.parse(Strings.flutterUrl),
-                          );
-                        }
-                      },
+                      onPressed: () =>
+                          RedirectHandler.openUrl(Strings.flutterUrl),
                       child: Text(
                         Strings.poweredByFlutter.toUpperCase(),
                         style: Theme.of(context).textTheme.labelSmall!.copyWith(
@@ -277,25 +415,9 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
                     ),
                 ],
               ),
-              actions: <Widget>[
-                IconButton(
-                    onPressed: () async {
-                      final String docID =
-                          '${DateTime.now().month}${DateTime.now().day}${DateTime.now().year.toString().substring(2)}-${DateTime.now().hour}${DateTime.now().minute}${DateTime.now().second}';
-                      final String content = base64Encode(
-                          await pdfGenerator.generateResumeAsPDF());
-                      html.AnchorElement(
-                          href:
-                              'data:application/octet-stream;charset=utf-16le;base64,$content')
-                        ..setAttribute('download',
-                            '${pdfGenerator.resume.nameController.text} Resume $docID.pdf')
-                        ..click();
-                    },
-                    tooltip: Strings.download,
-                    icon: const Icon(Icons.download)),
-                const SizedBox(width: 10),
-                const SizedBox(width: 24),
-              ],
+              actions: orientation == Orientation.landscape
+                  ? _actionItems(portraitMode: false)
+                  : null,
               centerTitle: false,
             ),
             body: Consumer<Resume>(

@@ -3,6 +3,7 @@ import 'constants/strings.dart';
 import 'pages/split_view.dart';
 
 void main() {
+  WidgetsFlutterBinding.ensureInitialized();
   runApp(const FlutterResumeBuilder());
 }
 
