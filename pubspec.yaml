@@ -3,7 +3,7 @@ description: A resume builder app made with flutter.
 
 publish_to: "none"
 
-version: 0.2.0+3
+version: 0.3.0+4
 
 environment:
   sdk: ">=2.17.1 <3.0.0"
