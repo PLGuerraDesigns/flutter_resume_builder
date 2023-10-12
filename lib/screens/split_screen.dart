@@ -166,16 +166,17 @@ class SplitScreenState extends State<SplitScreen>
                       style: Theme.of(context).textTheme.titleLarge,
                     ),
                     Text(
-                      '${projectInfoHandler.version} (${projectInfoHandler.buildNumber})',
-                      style: Theme.of(context).textTheme.bodyMedium,
+                      projectInfoHandler.fullVersion,
+                      style: Theme.of(context).textTheme.labelMedium,
                     ),
                   ],
                 ),
               ],
             ),
-            content: const Text(
+            content: Text(
               Strings.projectInfo,
               textAlign: TextAlign.center,
+              style: Theme.of(context).textTheme.bodyMedium,
             ),
             actions: <Widget>[
               TextButton(
@@ -250,7 +251,7 @@ class SplitScreenState extends State<SplitScreen>
         ),
         _listOption(
           context: context,
-          title: Strings.contributeToThisProject.toUpperCase(),
+          title: Strings.contributeCode.toUpperCase(),
           iconData: Icons.code,
           onTap: () {
             Navigator.pop(context);
@@ -289,7 +290,7 @@ class SplitScreenState extends State<SplitScreen>
             padding: EdgeInsets.zero,
             child: _listOption(
                 context: context,
-                title: Strings.contributeToThisProject.toUpperCase(),
+                title: Strings.contributeCode.toUpperCase(),
                 iconData: Icons.code,
                 onTap: () {
                   Navigator.pop(context);
@@ -335,6 +336,7 @@ class SplitScreenState extends State<SplitScreen>
                 : PortraitDrawer(
                     pdfGenerator: pdfGenerator,
                     actionItems: _actionItems(portraitMode: true),
+                    projectVersionInfoHandler: projectInfoHandler,
                   ),
             appBar: AppBar(
               bottom: orientation == Orientation.landscape

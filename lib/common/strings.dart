@@ -19,10 +19,10 @@ class Strings {
   static const String poweredByFlutter = 'Powered by Flutter';
   static const String flutterResumeBuilder = 'Flutter Resume Builder';
   static const String projectInfo =
-      'This project is still under development!\n\nThe Flutter Resume Builder is an open source project created by Pablo L. Guerra to provide users with a web-based resume builder that is free and easy to use while still providing professional resumes.';
-  static const String aboutThisProject = 'About this project';
-  static const String moreOptions = 'More options';
-  static const String contributeToThisProject = 'Contribute to this project';
+      'The Flutter Resume Builder, crafted by Pablo L. Guerra, is an open-source initiative aimed at offering users a user-friendly, web-based resume builder that is both free and capable of producing polished resumes.';
+  static const String aboutThisProject = 'About this Project';
+  static const String moreOptions = 'More Options';
+  static const String contributeCode = 'Contribute Code';
   static const String projectDonation = 'Project Donation';
   static const String licenses = 'Licenses';
   static const String moreProjects = 'More Projects';

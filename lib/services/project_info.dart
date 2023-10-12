@@ -28,6 +28,8 @@ class ProjectVersionInfoHandler {
   /// The project build number.
   String get buildNumber => packageInfo.buildNumber;
 
+  String get fullVersion => '$version ($buildNumber)';
+
   /// Return a map of the project version info.
   Map<String, dynamic> toMap() {
     return <String, dynamic>{
