@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import '../services/pdf_generator.dart';
 
 /// A drawer that is displayed in portrait mode.

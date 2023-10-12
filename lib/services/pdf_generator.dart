@@ -6,7 +6,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart';
 import 'package:printing/printing.dart';
 
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import '../models/education.dart';
 import '../models/experience.dart';
 import '../models/generic.dart';
@@ -399,16 +399,12 @@ class PDFGenerator {
       switch (sectionName) {
         case Strings.skills:
           sections.add(_skillsList());
-          break;
         case Strings.experience:
           sections.add(_experienceSection());
-          break;
         case Strings.education:
           sections.add(_educationSection());
-          break;
         default:
           sections.add(_customSection(sectionIndex, sectionName: sectionName));
-          break;
       }
       sectionIndex++;
     }

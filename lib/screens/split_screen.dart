@@ -1,13 +1,9 @@
-import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-import '../constants/strings.dart';
-import '../models/contact.dart';
-import '../models/education.dart';
-import '../models/experience.dart';
-import '../models/generic.dart';
+import '../common/sample_resume.dart';
+import '../common/strings.dart';
 import '../models/resume.dart';
 import '../services/file_handler.dart';
 import '../services/pdf_generator.dart';
@@ -18,15 +14,16 @@ import 'input_form.dart';
 import 'pdf_viewer.dart';
 
 /// Split view of the resume builder (input form and PDF viewer).
-class SplitView extends StatefulWidget {
-  const SplitView({super.key});
+class SplitScreen extends StatefulWidget {
+  const SplitScreen({super.key});
   @override
-  State<StatefulWidget> createState() => SplitViewState();
+  State<StatefulWidget> createState() => SplitScreenState();
 }
 
-class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
+class SplitScreenState extends State<SplitScreen>
+    with TickerProviderStateMixin {
   /// The resume to use.
-  final Resume _resume = Resume();
+  Resume _resume = SampleResume();
 
   /// The project info handler.
   ProjectVersionInfoHandler projectInfoHandler = ProjectVersionInfoHandler();
@@ -37,91 +34,16 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
   /// The tab controller.
   TabController? _tabController;
 
-  /// Populates the resume with sample data.
-  void _populateSampleResume() {
-    _resume.nameController.text = 'John Doe';
-    _resume.locationController.text = 'San Francisco, CA';
-    _resume.skillTextControllers = <TextEditingController>[
-      TextEditingController(text: 'Flutter'),
-      TextEditingController(text: 'Dart'),
-      TextEditingController(text: 'Python'),
-      TextEditingController(text: 'Java'),
-      TextEditingController(text: 'C++'),
-    ];
-    _resume.contactList = <Contact>[
-      Contact(value: 'johndoe@email.com', iconData: CupertinoIcons.mail),
-      Contact(value: 'linkedin.com/in/jdoe', iconData: CupertinoIcons.link),
-      Contact(value: '123-456-7890'),
-      Contact(
-          value: 'example.com/portfolio/jdoe', iconData: CupertinoIcons.globe),
-    ];
-    _resume.experiences = <Experience>[
-      Experience(
-        company: 'Example Holdings Inc.',
-        position: 'Software Engineer',
-        startDate: '01/2020',
-        endDate: 'Present',
-        location: 'San Francisco, CA',
-        description:
-            '• Installed and configured software applications and tested solutions for effectiveness.\n• Worked with project managers, developers, quality assurance and customers to resolve\n  technical issues.\n• Interfaced with cross-functional team of business analysts, developers and technical\n  support professionals to determine comprehensive list of requirement specifications for\n  new applications.',
-      ),
-      Experience(
-        company: 'Example Technologies',
-        position: 'Software Development Associate',
-        startDate: '01/2019',
-        endDate: '12/2019',
-        location: 'San Francisco, CA',
-        description:
-            '• Administered government-supported community development programs and promoted\n  department programs and services.\n• Worked closely with clients to establish problem specifications and system designs.\n• Developed next generation integration platform for internal applications.',
-      ),
-      Experience(
-        position: 'Web Development Intern',
-        company: 'Example Appraisal Services',
-        startDate: '06/2018',
-        endDate: '08/2018',
-        location: 'San Francisco, CA',
-        description:
-            '• Participated with preparation of design documents for trackwork, including alignments,\n  specifications, criteria details and estimates.\n• Collaborated with senior engineers on projects and offered insight.\n• Engaged in software development utilizing wide range of technological tools and\n  industrial Ethernet-based protocols.',
-      )
-    ];
-    _resume.educationHistory = <Education>[
-      Education(
-        institution: 'Example University',
-        degree: 'MS, Software Engineering',
-        startDate: '08/2018',
-        endDate: '12/2019',
-        location: 'San Francisco, CA',
-      ),
-      Education(
-        institution: 'Example State University',
-        degree: 'BS, Computer Science',
-        startDate: '08/2014',
-        endDate: '05/2018',
-        location: 'San Francisco, CA',
-      ),
-    ];
-    _resume.customSections = <Map<String, GenericEntry>>[
-      <String, GenericEntry>{
-        'Projects': GenericEntry(
-            title: 'Inventory Management System',
-            description:
-                '• Developed a mobile application for a local business to manage their inventory and sales.\n• Utilized Flutter and Firebase to create a cross-platform application for Android and iOS.\n• Implemented a barcode scanner to scan products and update inventory in real-time.\n• Designed a user interface to display sales and inventory data in a visually appealing manner.'),
-      },
-      <String, GenericEntry>{
-        'Projects': GenericEntry(
-            title: 'Project Management System',
-            description:
-                '• Built a web application to manage and track the progress of projects.\n•  Utilized Flutter and GitHub Pages to create a web application for desktop and mobile.\n')
-      }
-    ];
-  }
+  /// The form scroll controller.
+  final ScrollController _formScrollController = ScrollController();
 
   /// The portrait layout of the split view.
   Widget _portraitLayout() {
     return TabBarView(
       controller: _tabController,
       children: <Widget>[
-        const InputForm(
+        ResumeInputForm(
+          scrollController: _formScrollController,
           portrait: true,
         ),
         PDFViewer(pdfGenerator: pdfGenerator),
@@ -133,7 +55,10 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
   Widget _landscapeLayout() {
     return Row(
       children: <Widget>[
-        const Expanded(child: InputForm()),
+        Expanded(
+            child: ResumeInputForm(
+          scrollController: _formScrollController,
+        )),
         Expanded(
           child: Stack(
             children: <Widget>[
@@ -287,11 +212,31 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
       return <Widget>[
         _listOption(
           context: context,
-          title: Strings.downloadPDF,
+          title: Strings.importResume.toUpperCase(),
+          iconData: Icons.upload,
+          onTap: () {
+            Navigator.pop(context);
+            FileHandler().importResume().then((dynamic result) {
+              if (result != null) {
+                setState(() {
+                  _resume = Resume.fromMap(
+                      (result as Map<String, dynamic>)['resume']
+                          as Map<String, dynamic>);
+                  pdfGenerator = PDFGenerator(resume: _resume);
+                });
+              }
+            });
+          },
+        ),
+        _listOption(
+          context: context,
+          title: Strings.downloadFiles,
           iconData: Icons.download,
           onTap: () {
             Navigator.pop(context);
-            FileHandler().savePDF(pdfGenerator);
+            FileHandler().downloadFiles(
+                pdfGenerator: pdfGenerator,
+                projectVersionInfoHandler: projectInfoHandler);
           },
         ),
         _listOption(
@@ -326,8 +271,11 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
     return <Widget>[
       IconButton(
         icon: const Icon(Icons.download),
-        tooltip: Strings.downloadPDF,
-        onPressed: () => FileHandler().savePDF(pdfGenerator),
+        tooltip: Strings.downloadFiles,
+        onPressed: () => FileHandler().downloadFiles(
+          pdfGenerator: pdfGenerator,
+          projectVersionInfoHandler: projectInfoHandler,
+        ),
       ),
       IconButton(
         icon: const Icon(Icons.info),
@@ -371,7 +319,6 @@ class SplitViewState extends State<SplitView> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    _populateSampleResume();
     _tabController = TabController(length: 2, vsync: this);
     pdfGenerator = PDFGenerator(resume: _resume);
   }

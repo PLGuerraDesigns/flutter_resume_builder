@@ -8,7 +8,7 @@ import 'package:flutter_reorderable_grid_view/entities/order_update_entity.dart'
 import 'package:flutter_reorderable_grid_view/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import '../models/education.dart';
 import '../models/experience.dart';
 import '../models/generic.dart';
@@ -22,8 +22,9 @@ import '../widgets/generic_text_field.dart';
 import '../widgets/image_file_picker.dart';
 
 /// The input form for the resume.
-class InputForm extends StatefulWidget {
-  const InputForm({
+class ResumeInputForm extends StatefulWidget {
+  const ResumeInputForm({
+    required this.scrollController,
     super.key,
     this.portrait = false,
   });
@@ -31,11 +32,13 @@ class InputForm extends StatefulWidget {
   /// Whether the layout is portrait or not.
   final bool portrait;
 
+  final ScrollController scrollController;
+
   @override
-  State<InputForm> createState() => _InputFormState();
+  State<ResumeInputForm> createState() => _ResumeInputFormState();
 }
 
-class _InputFormState extends State<InputForm> {
+class _ResumeInputFormState extends State<ResumeInputForm> {
   /// Form fields for requesting the user's name, location, and a logo.
   Widget _header(Resume resume) {
     return Row(
@@ -216,7 +219,9 @@ class _InputFormState extends State<InputForm> {
           return GridView.custom(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            childrenDelegate: SliverChildListDelegate(children),
+            childrenDelegate: SliverChildListDelegate(
+              children,
+            ),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               mainAxisExtent: 74,
               crossAxisCount: widget.portrait ? 1 : 2,
@@ -518,13 +523,10 @@ class _InputFormState extends State<InputForm> {
       switch (sectionTitle) {
         case Strings.skills:
           sections.add(_skillsSection(resume));
-          break;
         case Strings.experience:
           sections.add(_experienceSection(resume));
-          break;
         case Strings.education:
           sections.add(_educationSection(resume));
-          break;
         default:
           sections.add(_customSection(title: sectionTitle, resume: resume));
       }
@@ -534,31 +536,37 @@ class _InputFormState extends State<InputForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Resume>(
-        builder: (BuildContext context, Resume resume, Widget? child) {
-      return SingleChildScrollView(
+    return Scrollbar(
+      controller: widget.scrollController,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        controller: widget.scrollController,
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: FormBuilder(
-              key: resume.formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  _header(resume),
-                  const SizedBox(height: 10),
-                  _contactSection(resume),
-                  ..._orderedSections(resume),
-                  const SizedBox(height: 20),
-                  OutlinedButton(
-                    onPressed: resume.addCustomSection,
-                    child: Text(
-                      Strings.addNewSection.toUpperCase(),
+          child: Consumer<Resume>(
+              builder: (BuildContext context, Resume resume, Widget? child) {
+            return FormBuilder(
+                key: resume.formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    _header(resume),
+                    const SizedBox(height: 10),
+                    _contactSection(resume),
+                    ..._orderedSections(resume),
+                    const SizedBox(height: 10),
+                    OutlinedButton(
+                      onPressed: resume.addCustomSection,
+                      child: Text(
+                        Strings.addNewSection.toUpperCase(),
+                      ),
                     ),
-                  ),
-                ],
-              )),
+                    const SizedBox(height: 50),
+                  ],
+                ));
+          }),
         ),
-      );
-    });
+      ),
+    );
   }
 }

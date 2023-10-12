@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import 'generic_text_field.dart';
 
 /// A form field for a date range.

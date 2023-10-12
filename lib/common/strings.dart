@@ -2,6 +2,8 @@ class Strings {
   Strings._();
 
   // URLs
+  static const String siteUrl =
+      'https://plguerradesigns.github.io/flutter_resume_builder/';
   static const String flutterUrl = 'https://flutter.dev/';
   static const String sponsorUrl = 'https://www.buymeacoffee.com/plguerra';
   static const String sourceCodeUrl =
@@ -10,7 +12,7 @@ class Strings {
       'https://plguerradesigns.github.io/portfolio/';
 
   // Asset Paths
-  static const String iconPath = 'images/icon.png';
+  static const String iconPath = 'assets/images/icon.png';
 
   // General
   static const String resumeBuilder = 'Resume Builder';
@@ -69,8 +71,9 @@ class Strings {
       'Are you sure you want to delete this section?\nThis action cannot be undone.';
 
   // Split view
-  static const String recompile = 'RECOMPILE';
-  static const String downloadPDF = 'DOWNLOAD PDF';
+  static const String recompile = 'Recompile';
+  static const String downloadFiles = 'Download Files';
+  static const String importResume = 'Import Resume';
   static const String form = 'Form';
   static const String preview = 'Preview';
 }

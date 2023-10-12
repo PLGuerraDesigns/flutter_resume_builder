@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import '../models/experience.dart';
 import 'date_range_entry.dart';
 import 'frosted_container.dart';
