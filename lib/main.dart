@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'constants/strings.dart';
-import 'pages/split_view.dart';
+import 'common/strings.dart';
+import 'screens/split_screen.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -18,7 +18,7 @@ class FlutterResumeBuilder extends StatelessWidget {
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
-      home: const SplitView(),
+      home: const SplitScreen(),
     );
   }
 }

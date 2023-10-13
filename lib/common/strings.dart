@@ -2,6 +2,8 @@ class Strings {
   Strings._();
 
   // URLs
+  static const String siteUrl =
+      'https://plguerradesigns.github.io/flutter_resume_builder/';
   static const String flutterUrl = 'https://flutter.dev/';
   static const String sponsorUrl = 'https://www.buymeacoffee.com/plguerra';
   static const String sourceCodeUrl =
@@ -10,18 +12,20 @@ class Strings {
       'https://plguerradesigns.github.io/portfolio/';
 
   // Asset Paths
-  static const String iconPath = 'images/icon.png';
+  static const String iconPath = 'assets/images/icon.png';
 
   // General
   static const String resumeBuilder = 'Resume Builder';
   static const String poweredByFlutter = 'Powered by Flutter';
   static const String flutterResumeBuilder = 'Flutter Resume Builder';
   static const String projectInfo =
-      'This project is still under development!\n\nThe Flutter Resume Builder is an open source project created by Pablo L. Guerra to provide users with a web-based resume builder that is free and easy to use while still providing professional resumes.';
-  static const String aboutThisProject = 'About this project';
-  static const String moreOptions = 'More options';
-  static const String contributeToThisProject = 'Contribute to this project';
-  static const String projectDonation = 'Project Donation';
+      'The Flutter Resume Builder, crafted by Pablo L. Guerra, is an '
+      'open-source initiative aimed at offering users\na user-friendly, '
+      'web-based resume builder that is both free and capable of producing polished resumes.';
+  static const String aboutThisProject = 'About this Project';
+  static const String moreOptions = 'More Options';
+  static const String contributeCode = 'Contribute Code';
+  static const String donate = 'Donate';
   static const String licenses = 'Licenses';
   static const String moreProjects = 'More Projects';
   static String copyRight(String year) => '© $year Pablo L. Guerra';
@@ -51,26 +55,38 @@ class Strings {
       'Failed to load network image.';
   static const String addImageBeforeEnabling = 'Add an image before enabling.';
   static const String removeSection = 'Remove Section';
-  static const String hideAllEntries = 'Hide All Entries';
-  static const String showAllEntries = 'Show All Entries';
+  static const String hideSection = 'Hide Section';
+  static const String showSection = 'Show Section';
   static const String newEntry = 'New Entry';
   static const String moveSectionUp = 'Move Section Up';
   static const String moveSectionDown = 'Move Section Down';
   static String deleteSection(String sectionName) =>
       'Delete $sectionName Section?';
-  static const String addNewSection = 'Add New Section';
+  static const String addCustomSection = 'Add Custom Section';
   static const String startDate = 'Start Date';
   static const String endDate = 'End Date';
   static const String title = 'Title';
   static const String subtitle = 'Subtitle';
   static const String description = 'Description';
+  static const String removeSectionWarning =
+      'Are you sure you want to remove this section?\nThis action cannot be undone.';
 
-  static const String deleteSectionWarning =
-      'Are you sure you want to delete this section?\nThis action cannot be undone.';
-
-  // Split view
-  static const String recompile = 'RECOMPILE';
-  static const String downloadPDF = 'DOWNLOAD PDF';
+  // Split Screen
+  static const String recompile = 'Recompile';
+  static const String downloadPdfAndJson = 'Download PDF and JSON File';
+  static const String noValidJsonFile = 'No valid JSON file selected.';
+  static const String importJson = 'Import JSON File';
   static const String form = 'Form';
   static const String preview = 'Preview';
+  static const String printPDF = 'Print PDF';
+  static const String clear = 'Clear';
+  static const String clearResume = 'Clear Resume';
+  static const String clearResumeWarning =
+      'Are you sure you want to clear the resume?\nThis action cannot be undone.';
+  static const String removeEntry = 'Remove Entry';
+  static const String removeEntryWarning =
+      'Are you sure you want to remove this entry?\nThis action cannot be undone.';
+  static const String remove = 'Remove';
+  static const String hideEntry = 'Hide Entry';
+  static const String showEntry = 'Show Entry';
 }

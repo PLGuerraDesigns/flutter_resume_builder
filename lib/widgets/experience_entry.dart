@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import '../models/experience.dart';
 import 'date_range_entry.dart';
+import 'edit_entry_menu.dart';
 import 'frosted_container.dart';
 import 'generic_text_field.dart';
 
@@ -12,6 +13,7 @@ class ExperienceEntry extends StatefulWidget {
     super.key,
     required this.experience,
     required this.onSubmitted,
+    required this.onRemove,
     required this.portrait,
   });
 
@@ -20,6 +22,8 @@ class ExperienceEntry extends StatefulWidget {
 
   /// The callback when the user submits the text field.
   final Function(String?)? onSubmitted;
+
+  final Function()? onRemove;
 
   /// Whether the layout is portrait or not.
   final bool portrait;
@@ -46,61 +50,77 @@ class ExperienceEntryState extends State<ExperienceEntry> {
 
   @override
   Widget build(BuildContext context) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 16),
-      child: FrostedContainer(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.stretch,
-          children: <Widget>[
-            const SizedBox(height: 4),
-            _responsiveLayout(
-              children: <Widget>[
-                Flexible(
-                  child: GenericTextField(
-                    label: Strings.position,
-                    onSubmitted: onSubmitted,
-                    controller: widget.experience.positionController,
+    return AnimatedOpacity(
+      duration: const Duration(milliseconds: 300),
+      opacity: widget.experience.visible ? 1 : 0.75,
+      child: Padding(
+        padding: const EdgeInsets.only(bottom: 16),
+        child: FrostedContainer(
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              EditEntryMenu(
+                visible: widget.experience.visible,
+                onRemove: widget.onRemove,
+                onToggleVisibility: () =>
+                    setState(widget.experience.toggleVisibility),
+              ),
+              const SizedBox(height: 4),
+              _responsiveLayout(
+                children: <Widget>[
+                  Flexible(
+                    child: GenericTextField(
+                      label: Strings.position,
+                      onSubmitted: onSubmitted,
+                      controller: widget.experience.positionController,
+                      enabled: widget.experience.visible,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10, height: 10),
-                Flexible(
-                  child: DateRangeEntry(
-                    startDateController: widget.experience.startDateController,
-                    endDateController: widget.experience.endDateController,
-                    onSubmitted: onSubmitted,
+                  const SizedBox(width: 10, height: 10),
+                  Flexible(
+                    child: DateRangeEntry(
+                      startDateController:
+                          widget.experience.startDateController,
+                      endDateController: widget.experience.endDateController,
+                      onSubmitted: onSubmitted,
+                      enableEditing: widget.experience.visible,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            _responsiveLayout(
-              children: <Widget>[
-                Flexible(
-                  flex: 2,
-                  child: GenericTextField(
-                    label: Strings.company,
-                    onSubmitted: onSubmitted,
-                    controller: widget.experience.companyController,
+                ],
+              ),
+              const SizedBox(height: 10),
+              _responsiveLayout(
+                children: <Widget>[
+                  Flexible(
+                    flex: 2,
+                    child: GenericTextField(
+                      label: Strings.company,
+                      onSubmitted: onSubmitted,
+                      controller: widget.experience.companyController,
+                      enabled: widget.experience.visible,
+                    ),
                   ),
-                ),
-                const SizedBox(width: 10, height: 10),
-                Flexible(
-                  child: GenericTextField(
-                    label: Strings.location,
-                    onSubmitted: onSubmitted,
-                    controller: widget.experience.locationController,
+                  const SizedBox(width: 10, height: 10),
+                  Flexible(
+                    child: GenericTextField(
+                      label: Strings.location,
+                      onSubmitted: onSubmitted,
+                      controller: widget.experience.locationController,
+                      enabled: widget.experience.visible,
+                    ),
                   ),
-                ),
-              ],
-            ),
-            const SizedBox(height: 10),
-            GenericTextField(
-              label: Strings.jobDescription,
-              controller: widget.experience.descriptionController,
-              multiLine: true,
-              onSubmitted: onSubmitted,
-            ),
-          ],
+                ],
+              ),
+              const SizedBox(height: 10),
+              GenericTextField(
+                label: Strings.jobDescription,
+                controller: widget.experience.descriptionController,
+                multiLine: true,
+                onSubmitted: onSubmitted,
+                enabled: widget.experience.visible,
+              ),
+            ],
+          ),
         ),
       ),
     );

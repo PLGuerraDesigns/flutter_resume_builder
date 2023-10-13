@@ -8,11 +8,12 @@ import 'package:flutter_reorderable_grid_view/entities/order_update_entity.dart'
 import 'package:flutter_reorderable_grid_view/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import '../models/education.dart';
 import '../models/experience.dart';
 import '../models/generic.dart';
 import '../models/resume.dart';
+import '../widgets/confirmation_dialog.dart';
 import '../widgets/contact_entry.dart';
 import '../widgets/custom_entry.dart';
 import '../widgets/education_entry.dart';
@@ -22,8 +23,9 @@ import '../widgets/generic_text_field.dart';
 import '../widgets/image_file_picker.dart';
 
 /// The input form for the resume.
-class InputForm extends StatefulWidget {
-  const InputForm({
+class ResumeInputForm extends StatefulWidget {
+  const ResumeInputForm({
+    required this.scrollController,
     super.key,
     this.portrait = false,
   });
@@ -31,11 +33,13 @@ class InputForm extends StatefulWidget {
   /// Whether the layout is portrait or not.
   final bool portrait;
 
+  final ScrollController scrollController;
+
   @override
-  State<InputForm> createState() => _InputFormState();
+  State<ResumeInputForm> createState() => _ResumeInputFormState();
 }
 
-class _InputFormState extends State<InputForm> {
+class _ResumeInputFormState extends State<ResumeInputForm> {
   /// Form fields for requesting the user's name, location, and a logo.
   Widget _header(Resume resume) {
     return Row(
@@ -132,11 +136,14 @@ class _InputFormState extends State<InputForm> {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (BuildContext context) =>
-                      deleteSectionConfirmationDialog(
-                    context: context,
-                    resume: resume,
-                    sectionName: title,
+                  builder: (BuildContext context) => ConfirmationDialog(
+                    title: Strings.removeSection,
+                    content: Strings.removeSectionWarning,
+                    confirmText: Strings.remove,
+                    onConfirm: () {
+                      resume.onDeleteCustomSection(title);
+                      Navigator.of(context).pop();
+                    },
                   ),
                 );
               },
@@ -150,8 +157,8 @@ class _InputFormState extends State<InputForm> {
             IconButton(
               onPressed: () => resume.toggleSectionVisibility(title),
               tooltip: resume.sectionVisible(title)
-                  ? Strings.hideAllEntries
-                  : Strings.showAllEntries,
+                  ? Strings.hideSection
+                  : Strings.showSection,
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               iconSize: 18,
@@ -216,7 +223,9 @@ class _InputFormState extends State<InputForm> {
           return GridView.custom(
             physics: const NeverScrollableScrollPhysics(),
             shrinkWrap: true,
-            childrenDelegate: SliverChildListDelegate(children),
+            childrenDelegate: SliverChildListDelegate(
+              children,
+            ),
             gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
               mainAxisExtent: 74,
               crossAxisCount: widget.portrait ? 1 : 2,
@@ -304,6 +313,7 @@ class _InputFormState extends State<InputForm> {
                 key: UniqueKey(),
                 child: TextFormField(
                   controller: resume.skillTextControllers[index],
+                  enabled: resume.sectionVisible(Strings.skills),
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -349,9 +359,9 @@ class _InputFormState extends State<InputForm> {
               child: ExperienceEntry(
                 portrait: widget.portrait,
                 experience: resume.experiences[index],
-                onSubmitted: (_) {
-                  resume.rebuild();
-                },
+                onSubmitted: (_) => resume.rebuild,
+                onRemove: () =>
+                    resume.onDeleteExperience(resume.experiences[index]),
               ),
             );
           },
@@ -388,9 +398,9 @@ class _InputFormState extends State<InputForm> {
               child: EducationEntry(
                 portrait: widget.portrait,
                 education: resume.educationHistory[index],
-                onSubmitted: (_) {
-                  resume.rebuild();
-                },
+                onSubmitted: (_) => resume.rebuild(),
+                onRemove: () =>
+                    resume.onDeleteEducation(resume.educationHistory[index]),
               ),
             );
           },
@@ -442,6 +452,11 @@ class _InputFormState extends State<InputForm> {
                 child: CustomEntry(
                   portrait: widget.portrait,
                   genericSection: genericSection[index],
+                  onRemove: () {
+                    resume.onDeleteCustomSectionEntry(
+                        genericSection[index], title);
+                  },
+                  enableEditing: resume.sectionVisible(title),
                   onSubmitted: (_) {
                     resume.rebuild();
                   },
@@ -478,39 +493,6 @@ class _InputFormState extends State<InputForm> {
     );
   }
 
-  /// A confirmation dialog for deleting a custom section.
-  Widget deleteSectionConfirmationDialog(
-      {required BuildContext context,
-      required Resume resume,
-      required String sectionName}) {
-    return AlertDialog(
-      title: Text(Strings.deleteSection(sectionName)),
-      content: const Text(
-        Strings.deleteSectionWarning,
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text(Strings.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            resume.onDeleteCustomSection(sectionName);
-            Navigator.of(context).pop();
-          },
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.red,
-          ),
-          child: const Text(
-            Strings.delete,
-          ),
-        ),
-      ],
-    );
-  }
-
   /// Returns a list of sections in the order they should be displayed.
   List<Widget> _orderedSections(Resume resume) {
     final List<Widget> sections = <Widget>[];
@@ -518,13 +500,10 @@ class _InputFormState extends State<InputForm> {
       switch (sectionTitle) {
         case Strings.skills:
           sections.add(_skillsSection(resume));
-          break;
         case Strings.experience:
           sections.add(_experienceSection(resume));
-          break;
         case Strings.education:
           sections.add(_educationSection(resume));
-          break;
         default:
           sections.add(_customSection(title: sectionTitle, resume: resume));
       }
@@ -534,31 +513,37 @@ class _InputFormState extends State<InputForm> {
 
   @override
   Widget build(BuildContext context) {
-    return Consumer<Resume>(
-        builder: (BuildContext context, Resume resume, Widget? child) {
-      return SingleChildScrollView(
+    return Scrollbar(
+      controller: widget.scrollController,
+      thumbVisibility: true,
+      child: SingleChildScrollView(
+        controller: widget.scrollController,
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: FormBuilder(
-              key: resume.formKey,
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  _header(resume),
-                  const SizedBox(height: 10),
-                  _contactSection(resume),
-                  ..._orderedSections(resume),
-                  const SizedBox(height: 20),
-                  OutlinedButton(
-                    onPressed: resume.addCustomSection,
-                    child: Text(
-                      Strings.addNewSection.toUpperCase(),
+          child: Consumer<Resume>(
+              builder: (BuildContext context, Resume resume, Widget? child) {
+            return FormBuilder(
+                key: resume.formKey,
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
+                  children: <Widget>[
+                    _header(resume),
+                    const SizedBox(height: 10),
+                    _contactSection(resume),
+                    ..._orderedSections(resume),
+                    const SizedBox(height: 10),
+                    OutlinedButton(
+                      onPressed: resume.addCustomSection,
+                      child: Text(
+                        Strings.addCustomSection.toUpperCase(),
+                      ),
                     ),
-                  ),
-                ],
-              )),
+                    const SizedBox(height: 50),
+                  ],
+                ));
+          }),
         ),
-      );
-    });
+      ),
+    );
   }
 }

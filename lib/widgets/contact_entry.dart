@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import '../models/contact.dart';
 import 'frosted_container.dart';
 import 'generic_text_field.dart';

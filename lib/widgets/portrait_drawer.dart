@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-import '../constants/strings.dart';
+import '../common/strings.dart';
 import '../services/pdf_generator.dart';
+import '../services/project_info.dart';
 
 /// A drawer that is displayed in portrait mode.
 class PortraitDrawer extends StatelessWidget {
@@ -10,6 +11,7 @@ class PortraitDrawer extends StatelessWidget {
     super.key,
     required this.pdfGenerator,
     required this.actionItems,
+    required this.projectVersionInfoHandler,
   });
 
   /// The PDF generator.
@@ -17,6 +19,9 @@ class PortraitDrawer extends StatelessWidget {
 
   /// The action items to display in the drawer.
   final List<Widget> actionItems;
+
+  /// The project version info handler.
+  final ProjectVersionInfoHandler projectVersionInfoHandler;
 
   @override
   Widget build(BuildContext context) {
@@ -34,6 +39,13 @@ class PortraitDrawer extends StatelessWidget {
                   Strings.iconPath,
                   height: 50,
                 ),
+                const SizedBox(height: 4),
+                Text(
+                  projectVersionInfoHandler.fullVersion,
+                  style: Theme.of(context).textTheme.labelSmall,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 4),
                 TextButton(
                   onPressed: () async {
                     if (await canLaunchUrl(Uri.parse(Strings.flutterUrl))) {

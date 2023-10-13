@@ -2,7 +2,6 @@ import 'dart:typed_data';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_form_builder/flutter_form_builder.dart';
-import '../constants/strings.dart';
 import 'contact.dart';
 import 'education.dart';
 import 'experience.dart';
@@ -10,30 +9,87 @@ import 'generic.dart';
 
 /// The resume being edited.
 class Resume extends ChangeNotifier {
-  Resume() {
-    nameController.text = '';
-    locationController.text = '';
-    contactList = <Contact>[Contact(), Contact(), Contact(), Contact()];
-    experiences = <Experience>[
-      Experience(),
-      Experience(),
-    ];
-    educationHistory = <Education>[
-      Education(),
-      Education(),
-    ];
-    customSections = <Map<String, GenericEntry>>[
-      <String, GenericEntry>{
-        'Projects': GenericEntry(),
-      },
-    ];
-    sectionOrder = <String>[
-      Strings.skills,
-      Strings.experience,
-      'Projects',
-      Strings.education,
-    ];
+  Resume({
+    DateTime? creationDate,
+    DateTime? lastModified,
+    String? name,
+    String? location,
+    List<Contact>? contactList,
+    List<Experience>? experiences,
+    List<Education>? educationHistory,
+    List<String>? skills,
+    List<Map<String, GenericEntry>>? customSections,
+    List<String>? sectionOrder,
+    List<String>? hiddenSections,
+    this.logoAsBytes,
+  }) {
+    this.creationDate = creationDate ?? DateTime.now();
+    this.lastModified = lastModified ?? DateTime.now();
+    nameController.text = name ?? '';
+    locationController.text = location ?? '';
+    this.contactList =
+        contactList ?? <Contact>[Contact(), Contact(), Contact(), Contact()];
+    this.experiences = experiences ?? <Experience>[Experience()];
+    this.educationHistory = educationHistory ?? <Education>[Education()];
+    skillTextControllers = skills != null
+        ? skills.map((String e) => TextEditingController(text: e)).toList()
+        : <TextEditingController>[TextEditingController()];
+    this.customSections = customSections ?? <Map<String, GenericEntry>>[];
+    this.sectionOrder = sectionOrder ??
+        <String>[
+          'Skills',
+          'Experience',
+          'Education',
+        ];
+    _hiddenSections = hiddenSections ?? <String>[];
   }
+
+  factory Resume.fromMap(Map<String, dynamic> map) {
+    return Resume(
+      creationDate: DateTime.parse(map['creationDate'] as String),
+      lastModified: DateTime.parse(map['lastModified'] as String),
+      name: map['name'] as String,
+      location: map['location'] as String,
+      contactList: (map['contact'] as List<dynamic>)
+          .map((dynamic e) => Contact.fromMap(e as Map<String, dynamic>))
+          .toList(),
+      experiences: (map['experience'] as List<dynamic>)
+          .map((dynamic e) => Experience.fromMap(e as Map<String, dynamic>))
+          .toList(),
+      educationHistory: (map['education'] as List<dynamic>)
+          .map((dynamic e) => Education.fromMap(e as Map<String, dynamic>))
+          .toList(),
+      skills: (map['skills'] as List<dynamic>)
+          .map((dynamic e) => e as String)
+          .toList(),
+      customSections: (map['customSections'] as List<dynamic>)
+          .cast<Map<String, dynamic>>()
+          .map(
+            (Map<String, dynamic> e) => <String, GenericEntry>{
+              e.keys.first: GenericEntry(
+                title:
+                    (e.values.first as Map<String, dynamic>)['title'] as String,
+                description: (e.values.first
+                    as Map<String, dynamic>)['description'] as String,
+              ),
+            },
+          )
+          .toList(),
+      sectionOrder: (map['sectionOrder'] as List<dynamic>)
+          .map((dynamic e) => e as String)
+          .toList(),
+      logoAsBytes: map['logoAsBytes'] != null
+          ? Uint8List.fromList(
+              (map['logoAsBytes'] as List<dynamic>).cast<int>())
+          : null,
+    );
+  }
+
+  /// The creation date of the resume.
+  DateTime creationDate = DateTime.now();
+
+  /// The last modified date of the resume.
+  DateTime lastModified = DateTime.now();
 
   /// The form key for the resume.
   final GlobalKey<FormBuilderState> formKey = GlobalKey<FormBuilderState>();
@@ -50,8 +106,16 @@ class Resume extends ChangeNotifier {
   /// The list of professional experiences.
   List<Experience> experiences = <Experience>[];
 
+  /// The list of visible experiences.
+  List<Experience> get visibleExperiences =>
+      experiences.where((Experience e) => e.visible).toList();
+
   /// The educational history.
   List<Education> educationHistory = <Education>[];
+
+  /// The list of visible education entries.
+  List<Education> get visibleEducation =>
+      educationHistory.where((Education e) => e.visible).toList();
 
   /// The list of skills.
   List<TextEditingController> skillTextControllers = <TextEditingController>[];
@@ -60,6 +124,11 @@ class Resume extends ChangeNotifier {
   List<Map<String, GenericEntry>> customSections =
       <Map<String, GenericEntry>>[];
 
+  /// The list of visible custom sections.
+  List<Map<String, GenericEntry>> get visibleCustomSections => customSections
+      .where((Map<String, GenericEntry> e) => e.values.first.visible)
+      .toList();
+
   /// The order of the sections.
   List<String> sectionOrder = <String>[];
 
@@ -67,7 +136,7 @@ class Resume extends ChangeNotifier {
   Uint8List? logoAsBytes;
 
   /// The list of hidden sections.
-  final List<String> _hiddenSections = <String>[];
+  List<String> _hiddenSections = <String>[];
 
   /// Whether the section is visible.
   bool sectionVisible(String sectionName) {
@@ -220,8 +289,58 @@ class Resume extends ChangeNotifier {
     notifyListeners();
   }
 
+  /// Delete a custom section entry.
+  void onDeleteCustomSectionEntry(GenericEntry entry, String sectionName) {
+    customSections
+        .where((Map<String, GenericEntry> element) =>
+            element.containsKey(sectionName))
+        .first
+        .removeWhere((String key, GenericEntry value) => value == entry);
+    notifyListeners();
+  }
+
+  /// Delete a contact.
+  void onDeleteExperience(Experience experience) {
+    experiences.remove(experience);
+    notifyListeners();
+  }
+
+  /// Delete an education entry.
+  void onDeleteEducation(Education education) {
+    educationHistory.remove(education);
+    notifyListeners();
+  }
+
   /// Rebuild the resume/UI.
   void rebuild() {
     notifyListeners();
+  }
+
+  /// Return a map of the resume.
+  Map<String, dynamic> toMap() {
+    final Map<String, dynamic> map = <String, dynamic>{
+      'creationDate': creationDate.toString(),
+      'lastModified': lastModified.toString(),
+      'name': nameController.text,
+      'location': locationController.text,
+      'contact': contactList.map((Contact e) => e.toMap()).toList(),
+      'experience': experiences.map((Experience e) => e.toMap()).toList(),
+      'education': educationHistory.map((Education e) => e.toMap()).toList(),
+      'skills': skillTextControllers
+          .map((TextEditingController e) => e.text)
+          .toList(),
+      'customSections': customSections
+          .map((Map<String, GenericEntry> entry) =>
+              <String, List<Map<String, dynamic>>>{
+                entry.keys.first: <Map<String, dynamic>>[
+                  for (final GenericEntry entry in entry.values) entry.toMap()
+                ],
+              })
+          .toList(),
+      'sectionOrder': sectionOrder,
+      'hiddenSections': _hiddenSections,
+      'logoAsBytes': logoAsBytes
+    };
+    return map;
   }
 }

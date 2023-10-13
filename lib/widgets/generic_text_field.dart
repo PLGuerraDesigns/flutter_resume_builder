@@ -8,6 +8,7 @@ class GenericTextField extends StatefulWidget {
     required this.label,
     required this.controller,
     required this.onSubmitted,
+    this.enabled = true,
     this.multiLine = false,
     this.roundedStyling = true,
   });
@@ -27,6 +28,9 @@ class GenericTextField extends StatefulWidget {
   /// The callback when the user submits the text field.
   final Function(String?)? onSubmitted;
 
+  /// Whether the text field is enabled.
+  final bool enabled;
+
   @override
   State<GenericTextField> createState() => _GenericTextFieldState();
 }
@@ -39,6 +43,7 @@ class _GenericTextFieldState extends State<GenericTextField> {
       minLines: widget.multiLine ? 2 : 1,
       maxLines: widget.multiLine || widget.multiLine ? 15 : 1,
       controller: widget.controller,
+      enabled: widget.enabled,
       style: !widget.roundedStyling
           ? const TextStyle(
               fontSize: 20,
