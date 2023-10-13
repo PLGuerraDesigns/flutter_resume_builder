@@ -62,19 +62,18 @@ class Resume extends ChangeNotifier {
       skills: (map['skills'] as List<dynamic>)
           .map((dynamic e) => e as String)
           .toList(),
-      customSections: (map['customSections'] as List<dynamic>)
-          .cast<Map<String, dynamic>>()
-          .map(
-            (Map<String, dynamic> e) => <String, GenericEntry>{
-              e.keys.first: GenericEntry(
-                title:
-                    (e.values.first as Map<String, dynamic>)['title'] as String,
-                description: (e.values.first
-                    as Map<String, dynamic>)['description'] as String,
-              ),
-            },
-          )
-          .toList(),
+      customSections: (map['customSections'] as List<dynamic>).map((dynamic e) {
+        final Map<String, GenericEntry> customSection =
+            <String, GenericEntry>{};
+        for (final String key in (e as Map<String, dynamic>).keys) {
+          for (final dynamic entry
+              in (e[key] as List<dynamic>).cast<Map<String, dynamic>>()) {
+            customSection[key] =
+                GenericEntry.fromMap(entry as Map<String, dynamic>);
+          }
+        }
+        return customSection;
+      }).toList(),
       sectionOrder: (map['sectionOrder'] as List<dynamic>)
           .map((dynamic e) => e as String)
           .toList(),
