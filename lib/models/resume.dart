@@ -317,18 +317,33 @@ class Resume extends ChangeNotifier {
             element.containsKey(sectionTitle))
         .first
         .removeWhere((String key, GenericEntry value) => value == entry);
+    customSections.removeWhere(
+        (Map<String, GenericEntry> element) => element.keys.isEmpty);
+    if (customSections
+        .where((Map<String, GenericEntry> element) =>
+            element.containsKey(sectionTitle))
+        .isEmpty) {
+      addCustomSectionEntry(sectionTitle);
+    }
+
     notifyListeners();
   }
 
   /// Delete a contact.
   void onDeleteExperience(Experience experience) {
     experiences.remove(experience);
+    if (experiences.isEmpty) {
+      addExperience();
+    }
     notifyListeners();
   }
 
   /// Delete an education entry.
   void onDeleteEducation(Education education) {
     educationHistory.remove(education);
+    if (educationHistory.isEmpty) {
+      addEducation();
+    }
     notifyListeners();
   }
 

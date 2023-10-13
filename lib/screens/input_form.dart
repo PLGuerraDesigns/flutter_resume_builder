@@ -140,7 +140,6 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
                     confirmText: Strings.remove,
                     onConfirm: () {
                       resume.onDeleteCustomSection(title);
-                      Navigator.of(context).pop();
                     },
                   ),
                 );
@@ -430,10 +429,8 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
                 child: CustomEntry(
                   portrait: widget.portrait,
                   genericSection: genericSection[index],
-                  onRemove: () {
-                    resume.onDeleteCustomSectionEntry(
-                        genericSection[index], title);
-                  },
+                  onRemove: () => resume.onDeleteCustomSectionEntry(
+                      genericSection[index], title),
                   enableEditing: resume.sectionVisible(title),
                   rebuild: resume.rebuild,
                 ),
