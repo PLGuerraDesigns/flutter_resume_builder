@@ -111,17 +111,19 @@ class SplitScreenState extends State<SplitScreen>
             });
           case 2:
             showDialog(
-                context: context,
-                builder: (BuildContext context) => DownloadDialog(
-                      onDownloadPdf: () async {
-                        Navigator.pop(context);
-                        await FileHandler().savePDF(pdfGenerator);
-                      },
-                      onDownloadJson: () async {
-                        Navigator.pop(context);
-                        await FileHandler().savePDF(pdfGenerator);
-                      },
-                    ));
+              context: context,
+              builder: (BuildContext context) => DownloadDialog(
+                onDownloadPdf: () async {
+                  await FileHandler().savePDF(pdfGenerator);
+                },
+                onDownloadJson: () {
+                  FileHandler().saveJSONData(
+                    pdfGenerator: pdfGenerator,
+                    projectVersionInfoHandler: projectInfoHandler,
+                  );
+                },
+              ),
+            );
           case 3:
             Printing.layoutPdf(
                 onLayout: (PdfPageFormat format) =>
@@ -463,17 +465,19 @@ class SplitScreenState extends State<SplitScreen>
                         tooltip: Strings.downloadPdfAndJson,
                         onPressed: () {
                           showDialog(
-                              context: context,
-                              builder: (BuildContext context) => DownloadDialog(
-                                    onDownloadPdf: () async {
-                                      Navigator.pop(context);
-                                      await FileHandler().savePDF(pdfGenerator);
-                                    },
-                                    onDownloadJson: () async {
-                                      Navigator.pop(context);
-                                      await FileHandler().savePDF(pdfGenerator);
-                                    },
-                                  ));
+                            context: context,
+                            builder: (BuildContext context) => DownloadDialog(
+                              onDownloadPdf: () async {
+                                await FileHandler().savePDF(pdfGenerator);
+                              },
+                              onDownloadJson: () {
+                                FileHandler().saveJSONData(
+                                  pdfGenerator: pdfGenerator,
+                                  projectVersionInfoHandler: projectInfoHandler,
+                                );
+                              },
+                            ),
+                          );
                         },
                       ),
                   ],
