@@ -21,6 +21,26 @@ https://plguerradesigns.github.io/flutter_resume_builder/
 - Multiple Pages
 - Resume Variations
 
+## Showcase:
+
+#### Overview
+
+![Overview](https://github.com/PLGuerraDesigns/flutter_resume_builder/blob/main/showcase/overview.gif)
+
+#### Editing
+
+![Edit Contact](https://github.com/PLGuerraDesigns/flutter_resume_builder/blob/main/showcase/edit_contact.gif)
+
+![Edit Experiences](https://github.com/PLGuerraDesigns/flutter_resume_builder/blob/main/showcase/edit_experiences.gif)
+
+![Visibility](https://github.com/PLGuerraDesigns/flutter_resume_builder/blob/main/showcase/visibility.gif)
+
+#### Downloading and Importing
+
+![Download](https://github.com/PLGuerraDesigns/flutter_resume_builder/blob/main/showcase/download.gif)
+
+![Import](https://github.com/PLGuerraDesigns/flutter_resume_builder/blob/main/showcase/import.gif)
+
 ## Getting Started (Dev):
 
 ### Install Flutter:
