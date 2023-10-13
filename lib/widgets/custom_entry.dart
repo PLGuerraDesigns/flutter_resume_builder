@@ -13,7 +13,7 @@ class CustomEntry extends StatefulWidget {
     super.key,
     required this.genericSection,
     required this.onRemove,
-    required this.onSubmitted,
+    required this.rebuild,
     required this.portrait,
     required this.enableEditing,
   });
@@ -23,8 +23,8 @@ class CustomEntry extends StatefulWidget {
 
   final Function()? onRemove;
 
-  /// The callback when the user submits the text field.
-  final Function(String?)? onSubmitted;
+  /// The callback when the user submits the text field or edits the visibility.
+  final Function()? rebuild;
 
   /// Whether the layout is portrait or not.
   final bool portrait;
@@ -37,9 +37,6 @@ class CustomEntry extends StatefulWidget {
 }
 
 class CustomEntryState extends State<CustomEntry> {
-  /// The callback when the user submits the text field.
-  Function(String?)? get onSubmitted => widget.onSubmitted;
-
   // Returns the layout based on the orientation.
   Widget _responsiveLayout({required List<Widget> children}) {
     if (widget.portrait) {
@@ -67,7 +64,10 @@ class CustomEntryState extends State<CustomEntry> {
                 visible: widget.genericSection.visible,
                 onRemove: widget.enableEditing ? widget.onRemove : null,
                 onToggleVisibility: widget.enableEditing
-                    ? () => setState(widget.genericSection.toggleVisibility)
+                    ? () {
+                        widget.genericSection.toggleVisibility();
+                        widget.rebuild?.call();
+                      }
                     : null,
               ),
               const SizedBox(height: 4),
@@ -76,7 +76,7 @@ class CustomEntryState extends State<CustomEntry> {
                   Flexible(
                     child: GenericTextField(
                       label: Strings.title,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       controller: widget.genericSection.titleController,
                       enabled:
                           widget.enableEditing && widget.genericSection.visible,
@@ -89,7 +89,7 @@ class CustomEntryState extends State<CustomEntry> {
                           widget.genericSection.startDateController,
                       endDateController:
                           widget.genericSection.endDateController,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       enableEditing:
                           widget.enableEditing && widget.genericSection.visible,
                     ),
@@ -103,7 +103,7 @@ class CustomEntryState extends State<CustomEntry> {
                     flex: 2,
                     child: GenericTextField(
                       label: Strings.subtitle,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       controller: widget.genericSection.subtitleController,
                       enabled:
                           widget.enableEditing && widget.genericSection.visible,
@@ -114,7 +114,7 @@ class CustomEntryState extends State<CustomEntry> {
                     child: GenericTextField(
                       label: Strings.location,
                       controller: widget.genericSection.locationController,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       enabled:
                           widget.enableEditing && widget.genericSection.visible,
                     ),
@@ -126,7 +126,7 @@ class CustomEntryState extends State<CustomEntry> {
                 label: Strings.description,
                 controller: widget.genericSection.descriptionController,
                 multiLine: true,
-                onSubmitted: onSubmitted,
+                onSubmitted: (_) => widget.rebuild,
                 enabled: widget.enableEditing && widget.genericSection.visible,
               ),
             ],

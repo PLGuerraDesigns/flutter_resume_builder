@@ -44,7 +44,10 @@ class PDFViewerState extends State<PDFViewer> {
           data: Theme.of(context).copyWith(brightness: Brightness.light),
           child: SfPdfViewer.memory(
             snapshot.data as Uint8List,
+            interactionMode: PdfInteractionMode.pan,
+            canShowPageLoadingIndicator: false,
             pageLayoutMode: PdfPageLayoutMode.single,
+            scrollDirection: PdfScrollDirection.horizontal,
           ),
         );
       },

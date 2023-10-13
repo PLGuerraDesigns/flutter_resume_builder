@@ -12,13 +12,13 @@ class EducationEntry extends StatefulWidget {
   const EducationEntry({
     super.key,
     required this.education,
-    required this.onSubmitted,
+    required this.rebuild,
     required this.portrait,
     required this.onRemove,
   });
 
-  /// The callback when the user submits the text field.
-  final Function(String?)? onSubmitted;
+  /// The callback when the user submits the text field or edits the visibility.
+  final Function()? rebuild;
 
   /// The education to use.
   final Education education;
@@ -26,6 +26,7 @@ class EducationEntry extends StatefulWidget {
   /// Whether the layout is portrait or not.
   final bool portrait;
 
+  /// The callback when the user removes the entry.
   final Function()? onRemove;
 
   @override
@@ -33,9 +34,6 @@ class EducationEntry extends StatefulWidget {
 }
 
 class EducationEntryState extends State<EducationEntry> {
-  /// The callback when the user submits the text field.
-  Function(String?)? get onSubmitted => widget.onSubmitted;
-
   /// Returns the layout based on the orientation.
   Widget _responsiveLayout({required List<Widget> children}) {
     if (widget.portrait) {
@@ -60,8 +58,10 @@ class EducationEntryState extends State<EducationEntry> {
             children: <Widget>[
               EditEntryMenu(
                 onRemove: widget.onRemove,
-                onToggleVisibility: () =>
-                    setState(widget.education.toggleVisibility),
+                onToggleVisibility: () {
+                  widget.education.toggleVisibility();
+                  widget.rebuild?.call();
+                },
                 visible: widget.education.visible,
               ),
               const SizedBox(height: 4),
@@ -71,7 +71,7 @@ class EducationEntryState extends State<EducationEntry> {
                     child: GenericTextField(
                       label: Strings.institution,
                       controller: widget.education.institutionController,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       enabled: widget.education.visible,
                     ),
                   ),
@@ -80,7 +80,7 @@ class EducationEntryState extends State<EducationEntry> {
                     child: DateRangeEntry(
                       startDateController: widget.education.startDateController,
                       endDateController: widget.education.endDateController,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       enableEditing: widget.education.visible,
                     ),
                   ),
@@ -93,7 +93,7 @@ class EducationEntryState extends State<EducationEntry> {
                     child: GenericTextField(
                       label: Strings.degree,
                       controller: widget.education.degreeController,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       enabled: widget.education.visible,
                     ),
                   ),
@@ -102,7 +102,7 @@ class EducationEntryState extends State<EducationEntry> {
                     child: GenericTextField(
                       label: Strings.location,
                       controller: widget.education.locationController,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       enabled: widget.education.visible,
                     ),
                   ),

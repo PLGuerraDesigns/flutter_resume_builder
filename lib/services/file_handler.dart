@@ -23,9 +23,9 @@ class FileHandler {
   }
 
   /// Saves the resume as a JSON file.
-  Future<void> _saveJSONData(
+  void _saveJSONData(
       {required PDFGenerator pdfGenerator,
-      required ProjectVersionInfoHandler projectVersionInfoHandler}) async {
+      required ProjectVersionInfoHandler projectVersionInfoHandler}) {
     final String docID =
         '${DateTime.now().month}${DateTime.now().day}${DateTime.now().year.toString().substring(2)}-${DateTime.now().hour}${DateTime.now().minute}${DateTime.now().second}';
 
@@ -44,9 +44,9 @@ class FileHandler {
   }
 
   /// Download all the files.
-  Future<void> downloadFiles(
+  void downloadFiles(
       {required PDFGenerator pdfGenerator,
-      required ProjectVersionInfoHandler projectVersionInfoHandler}) async {
+      required ProjectVersionInfoHandler projectVersionInfoHandler}) {
     _saveJSONData(
         pdfGenerator: pdfGenerator,
         projectVersionInfoHandler: projectVersionInfoHandler);
