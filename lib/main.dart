@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:go_router/go_router.dart';
 import 'common/strings.dart';
 import 'screens/split_screen.dart';
 
@@ -12,13 +13,22 @@ class FlutterResumeBuilder extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
+    return MaterialApp.router(
       title: Strings.flutterResumeBuilder,
       theme: ThemeData(
         brightness: Brightness.dark,
         useMaterial3: true,
       ),
-      home: const SplitScreen(),
+      routerConfig: GoRouter(
+        routes: <RouteBase>[
+          GoRoute(
+            path: '/',
+            builder: (BuildContext context, GoRouterState state) {
+              return const SplitScreen();
+            },
+          ),
+        ],
+      ),
     );
   }
 }

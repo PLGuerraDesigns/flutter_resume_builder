@@ -73,6 +73,7 @@ class Strings {
 
   // Split Screen
   static const String recompile = 'Recompile';
+  static const String recompileShortCut = '(Ctrl + Enter) or (⌘ + Enter)';
   static const String downloadPdfAndJson = 'Download PDF and JSON File';
   static const String noValidJsonFile = 'No valid JSON file selected.';
   static const String importJson = 'Import JSON File';

@@ -8,7 +8,7 @@ class FlutterSpinner extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return const Opacity(
-      opacity: 0.5,
+      opacity: 0.25,
       child: Stack(
         alignment: Alignment.center,
         children: <Widget>[

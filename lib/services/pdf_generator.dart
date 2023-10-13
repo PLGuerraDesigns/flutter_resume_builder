@@ -357,7 +357,7 @@ class PDFGenerator {
                         iterator < resume.skillTextControllers.length;
                         iterator++)
                       Text(
-                        '${resume.skillTextControllers[iterator].text}${iterator + 1 < resume.skillTextControllers.length ? " • " : ""}',
+                        '${resume.skillTextControllers[iterator].text}${iterator + 1 < resume.skillTextControllers.length && resume.skillTextControllers[iterator + 1].text.isNotEmpty ? " • " : ""}',
                       )
                   ],
                 )
@@ -425,16 +425,21 @@ class PDFGenerator {
         pageFormat: PdfPageFormat.letter,
         margin: const EdgeInsets.only(top: 50, left: 50, right: 50, bottom: 25),
         build: (Context context) {
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
+          return Stack(
+            alignment: Alignment.bottomCenter,
             children: <Widget>[
-              _header(),
-              ..._getOrderedSections(),
-              Spacer(),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: <Widget>[
+                  _header(),
+                  ..._getOrderedSections(),
+                ],
+              ),
               _footer(),
             ],
           );
         },
+        clip: true,
       ),
     );
     return pdf.save();

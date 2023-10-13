@@ -12,7 +12,7 @@ class ExperienceEntry extends StatefulWidget {
   const ExperienceEntry({
     super.key,
     required this.experience,
-    required this.onSubmitted,
+    required this.rebuild,
     required this.onRemove,
     required this.portrait,
   });
@@ -20,8 +20,8 @@ class ExperienceEntry extends StatefulWidget {
   /// The experience to use.
   final Experience experience;
 
-  /// The callback when the user submits the text field.
-  final Function(String?)? onSubmitted;
+  /// The callback when the user submits the text field or edits the visibility.
+  final Function()? rebuild;
 
   final Function()? onRemove;
 
@@ -33,9 +33,6 @@ class ExperienceEntry extends StatefulWidget {
 }
 
 class ExperienceEntryState extends State<ExperienceEntry> {
-  /// The callback when the user submits the text field.
-  Function(String?)? get onSubmitted => widget.onSubmitted;
-
   /// Returns the layout based on the orientation.
   Widget _responsiveLayout({required List<Widget> children}) {
     if (widget.portrait) {
@@ -62,8 +59,10 @@ class ExperienceEntryState extends State<ExperienceEntry> {
               EditEntryMenu(
                 visible: widget.experience.visible,
                 onRemove: widget.onRemove,
-                onToggleVisibility: () =>
-                    setState(widget.experience.toggleVisibility),
+                onToggleVisibility: () {
+                  widget.experience.toggleVisibility();
+                  widget.rebuild?.call();
+                },
               ),
               const SizedBox(height: 4),
               _responsiveLayout(
@@ -71,7 +70,7 @@ class ExperienceEntryState extends State<ExperienceEntry> {
                   Flexible(
                     child: GenericTextField(
                       label: Strings.position,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       controller: widget.experience.positionController,
                       enabled: widget.experience.visible,
                     ),
@@ -82,7 +81,7 @@ class ExperienceEntryState extends State<ExperienceEntry> {
                       startDateController:
                           widget.experience.startDateController,
                       endDateController: widget.experience.endDateController,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       enableEditing: widget.experience.visible,
                     ),
                   ),
@@ -95,7 +94,7 @@ class ExperienceEntryState extends State<ExperienceEntry> {
                     flex: 2,
                     child: GenericTextField(
                       label: Strings.company,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       controller: widget.experience.companyController,
                       enabled: widget.experience.visible,
                     ),
@@ -104,7 +103,7 @@ class ExperienceEntryState extends State<ExperienceEntry> {
                   Flexible(
                     child: GenericTextField(
                       label: Strings.location,
-                      onSubmitted: onSubmitted,
+                      onSubmitted: (_) => widget.rebuild,
                       controller: widget.experience.locationController,
                       enabled: widget.experience.visible,
                     ),
@@ -116,7 +115,7 @@ class ExperienceEntryState extends State<ExperienceEntry> {
                 label: Strings.jobDescription,
                 controller: widget.experience.descriptionController,
                 multiLine: true,
-                onSubmitted: onSubmitted,
+                onSubmitted: (_) => widget.rebuild,
                 enabled: widget.experience.visible,
               ),
             ],

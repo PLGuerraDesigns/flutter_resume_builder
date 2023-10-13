@@ -139,19 +139,40 @@ class Resume extends ChangeNotifier {
   List<String> _hiddenSections = <String>[];
 
   /// Whether the section is visible.
-  bool sectionVisible(String sectionName) {
-    return !_hiddenSections.contains(sectionName);
+  bool sectionVisible(String sectionTitle) {
+    return !_hiddenSections.contains(sectionTitle);
+  }
+
+  void addSkill() {
+    if (skillTextControllers
+        .where((element) => element.text.isEmpty)
+        .isNotEmpty) {
+      return;
+    }
+    skillTextControllers.add(TextEditingController());
+    notifyListeners();
   }
 
   /// Add a new professional experience entry.
   void addExperience() {
-    experiences.add(Experience());
+    experiences.insert(0, Experience());
     notifyListeners();
   }
 
   /// Add a new education entry.
   void addEducation() {
-    educationHistory.add(Education());
+    educationHistory.insert(0, Education());
+    notifyListeners();
+  }
+
+  /// Add a new custom section entry to the given section.
+  void addCustomSectionEntry(String sectionTitle) {
+    customSections.insert(
+      0,
+      <String, GenericEntry>{
+        sectionTitle: GenericEntry(),
+      },
+    );
     notifyListeners();
   }
 
@@ -165,11 +186,11 @@ class Resume extends ChangeNotifier {
   }
 
   /// Toggle the visibility of a section.
-  void toggleSectionVisibility(String sectionName) {
-    if (_hiddenSections.contains(sectionName)) {
-      _hiddenSections.remove(sectionName);
+  void toggleSectionVisibility(String sectionTitle) {
+    if (_hiddenSections.contains(sectionTitle)) {
+      _hiddenSections.remove(sectionTitle);
     } else {
-      _hiddenSections.add(sectionName);
+      _hiddenSections.add(sectionTitle);
     }
     notifyListeners();
   }
@@ -198,42 +219,42 @@ class Resume extends ChangeNotifier {
   }
 
   /// Whether the section can be moved up.
-  bool moveUpAllowed(String sectionName) {
-    return sectionOrder.indexOf(sectionName) > 0;
+  bool moveUpAllowed(String sectionTitle) {
+    return sectionOrder.indexOf(sectionTitle) > 0;
   }
 
   /// Whether the section can be moved down.
-  bool moveDownAllowed(String sectionName) {
-    return sectionOrder.indexOf(sectionName) < sectionOrder.length - 1;
+  bool moveDownAllowed(String sectionTitle) {
+    return sectionOrder.indexOf(sectionTitle) < sectionOrder.length - 1;
   }
 
   /// Whether the section can be removed. (Custom sections only)
-  bool removeAllowed(String sectionName) {
+  bool removeAllowed(String sectionTitle) {
     return customSections
         .where((Map<String, GenericEntry> element) =>
-            element.containsKey(sectionName))
+            element.containsKey(sectionTitle))
         .isNotEmpty;
   }
 
   /// Move the section up.
-  void moveUp(String sectionName) {
-    final int index = sectionOrder.indexOf(sectionName);
+  void moveUp(String sectionTitle) {
+    final int index = sectionOrder.indexOf(sectionTitle);
     if (index <= 0) {
       return;
     }
     sectionOrder.removeAt(index);
-    sectionOrder.insert(index - 1, sectionName);
+    sectionOrder.insert(index - 1, sectionTitle);
     notifyListeners();
   }
 
   /// Move the section down.
-  void moveDown(String sectionName) {
-    final int index = sectionOrder.indexOf(sectionName);
+  void moveDown(String sectionTitle) {
+    final int index = sectionOrder.indexOf(sectionTitle);
     if (index >= sectionOrder.length - 1) {
       return;
     }
     sectionOrder.removeAt(index);
-    sectionOrder.insert(index + 1, sectionName);
+    sectionOrder.insert(index + 1, sectionTitle);
     notifyListeners();
   }
 
@@ -281,19 +302,19 @@ class Resume extends ChangeNotifier {
   }
 
   /// Delete a custom section.
-  void onDeleteCustomSection(String sectionName) {
-    sectionOrder.remove(sectionName);
+  void onDeleteCustomSection(String sectionTitle) {
+    sectionOrder.remove(sectionTitle);
     customSections.removeWhere((Map<String, GenericEntry> element) =>
-        element.containsKey(sectionName));
+        element.containsKey(sectionTitle));
 
     notifyListeners();
   }
 
   /// Delete a custom section entry.
-  void onDeleteCustomSectionEntry(GenericEntry entry, String sectionName) {
+  void onDeleteCustomSectionEntry(GenericEntry entry, String sectionTitle) {
     customSections
         .where((Map<String, GenericEntry> element) =>
-            element.containsKey(sectionName))
+            element.containsKey(sectionTitle))
         .first
         .removeWhere((String key, GenericEntry value) => value == entry);
     notifyListeners();

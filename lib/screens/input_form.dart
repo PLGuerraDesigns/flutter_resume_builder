@@ -268,11 +268,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
           title: Strings.skills,
           resume: resume,
           allowVisibilityToggle: true,
-          onAddPressed: () {
-            setState(() {
-              resume.skillTextControllers.add(TextEditingController());
-            });
-          },
+          onAddPressed: resume.addSkill,
         ),
         Opacity(
           opacity: resume.sectionVisible(Strings.skills) ? 1 : 0.5,
@@ -338,11 +334,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
         _sectionTitle(
           title: Strings.experience,
           resume: resume,
-          onAddPressed: () {
-            setState(() {
-              resume.experiences.add(Experience());
-            });
-          },
+          onAddPressed: resume.addExperience,
         ),
         ReorderableList(
           itemCount: resume.experiences.length,
@@ -359,7 +351,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
               child: ExperienceEntry(
                 portrait: widget.portrait,
                 experience: resume.experiences[index],
-                onSubmitted: (_) => resume.rebuild,
+                rebuild: resume.rebuild,
                 onRemove: () =>
                     resume.onDeleteExperience(resume.experiences[index]),
               ),
@@ -377,11 +369,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
         _sectionTitle(
           title: Strings.education,
           resume: resume,
-          onAddPressed: () {
-            setState(() {
-              resume.educationHistory.add(Education());
-            });
-          },
+          onAddPressed: resume.addEducation,
         ),
         ReorderableList(
           itemCount: resume.educationHistory.length,
@@ -398,7 +386,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
               child: EducationEntry(
                 portrait: widget.portrait,
                 education: resume.educationHistory[index],
-                onSubmitted: (_) => resume.rebuild(),
+                rebuild: resume.rebuild,
                 onRemove: () =>
                     resume.onDeleteEducation(resume.educationHistory[index]),
               ),
@@ -425,15 +413,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
           resume: resume,
           titleEditable: true,
           allowVisibilityToggle: true,
-          onAddPressed: () {
-            setState(() {
-              resume.customSections.add(
-                <String, GenericEntry>{
-                  title: GenericEntry(),
-                },
-              );
-            });
-          },
+          onAddPressed: () => resume.addCustomSectionEntry(title),
         ),
         Opacity(
           opacity: resume.sectionVisible(title) ? 1 : 0.5,
@@ -457,9 +437,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
                         genericSection[index], title);
                   },
                   enableEditing: resume.sectionVisible(title),
-                  onSubmitted: (_) {
-                    resume.rebuild();
-                  },
+                  rebuild: resume.rebuild,
                 ),
               );
             },
