@@ -75,6 +75,11 @@ class Strings {
   static const String recompile = 'Recompile';
   static const String recompileShortCut = '(Ctrl + Enter) or (⌘ + Enter)';
   static const String downloadPdfAndJson = 'Download PDF and JSON File';
+  static const String downloadResume = 'Download Resume';
+  static const String downloadPdf = 'Download PDF';
+  static const String downloadJson = 'Download JSON';
+  static const String downloadResumeAsPdf =
+      'Download Resume as a PDF file for printing and JSON file for importing and editing.';
   static const String noValidJsonFile = 'No valid JSON file selected.';
   static const String importJson = 'Import JSON File';
   static const String form = 'Form';
