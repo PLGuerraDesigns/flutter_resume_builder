@@ -143,9 +143,10 @@ class Resume extends ChangeNotifier {
     return !_hiddenSections.contains(sectionTitle);
   }
 
+  /// Add a new skill entry.
   void addSkill() {
     if (skillTextControllers
-        .where((element) => element.text.isEmpty)
+        .where((TextEditingController element) => element.text.isEmpty)
         .isNotEmpty) {
       return;
     }

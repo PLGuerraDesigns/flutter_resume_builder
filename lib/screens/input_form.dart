@@ -9,8 +9,6 @@ import 'package:flutter_reorderable_grid_view/widgets/widgets.dart';
 import 'package:provider/provider.dart';
 
 import '../common/strings.dart';
-import '../models/education.dart';
-import '../models/experience.dart';
 import '../models/generic.dart';
 import '../models/resume.dart';
 import '../widgets/confirmation_dialog.dart';
