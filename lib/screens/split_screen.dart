@@ -13,6 +13,7 @@ import '../services/project_info.dart';
 import '../services/redirect_handler.dart';
 import '../widgets/about_dialog.dart';
 import '../widgets/confirmation_dialog.dart';
+import '../widgets/download_dialog.dart';
 import '../widgets/portrait_drawer.dart';
 import 'input_form.dart';
 import 'pdf_viewer.dart';
@@ -109,9 +110,18 @@ class SplitScreenState extends State<SplitScreen>
               }
             });
           case 2:
-            FileHandler().downloadFiles(
-                pdfGenerator: pdfGenerator,
-                projectVersionInfoHandler: projectInfoHandler);
+            showDialog(
+                context: context,
+                builder: (BuildContext context) => DownloadDialog(
+                      onDownloadPdf: () async {
+                        Navigator.pop(context);
+                        await FileHandler().savePDF(pdfGenerator);
+                      },
+                      onDownloadJson: () async {
+                        Navigator.pop(context);
+                        await FileHandler().savePDF(pdfGenerator);
+                      },
+                    ));
           case 3:
             Printing.layoutPdf(
                 onLayout: (PdfPageFormat format) =>
@@ -452,9 +462,18 @@ class SplitScreenState extends State<SplitScreen>
                         icon: const Icon(Icons.download),
                         tooltip: Strings.downloadPdfAndJson,
                         onPressed: () {
-                          FileHandler().downloadFiles(
-                              pdfGenerator: pdfGenerator,
-                              projectVersionInfoHandler: projectInfoHandler);
+                          showDialog(
+                              context: context,
+                              builder: (BuildContext context) => DownloadDialog(
+                                    onDownloadPdf: () async {
+                                      Navigator.pop(context);
+                                      await FileHandler().savePDF(pdfGenerator);
+                                    },
+                                    onDownloadJson: () async {
+                                      Navigator.pop(context);
+                                      await FileHandler().savePDF(pdfGenerator);
+                                    },
+                                  ));
                         },
                       ),
                   ],
