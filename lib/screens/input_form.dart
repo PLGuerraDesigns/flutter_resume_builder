@@ -13,6 +13,7 @@ import '../models/education.dart';
 import '../models/experience.dart';
 import '../models/generic.dart';
 import '../models/resume.dart';
+import '../widgets/confirmation_dialog.dart';
 import '../widgets/contact_entry.dart';
 import '../widgets/custom_entry.dart';
 import '../widgets/education_entry.dart';
@@ -135,11 +136,14 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
               onPressed: () {
                 showDialog(
                   context: context,
-                  builder: (BuildContext context) =>
-                      deleteSectionConfirmationDialog(
-                    context: context,
-                    resume: resume,
-                    sectionName: title,
+                  builder: (BuildContext context) => ConfirmationDialog(
+                    title: Strings.removeSection,
+                    content: Strings.removeSectionWarning,
+                    confirmText: Strings.remove,
+                    onConfirm: () {
+                      resume.onDeleteCustomSection(title);
+                      Navigator.of(context).pop();
+                    },
                   ),
                 );
               },
@@ -153,8 +157,8 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
             IconButton(
               onPressed: () => resume.toggleSectionVisibility(title),
               tooltip: resume.sectionVisible(title)
-                  ? Strings.hideAllEntries
-                  : Strings.showAllEntries,
+                  ? Strings.hideSection
+                  : Strings.showSection,
               visualDensity: VisualDensity.compact,
               padding: EdgeInsets.zero,
               iconSize: 18,
@@ -309,6 +313,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
                 key: UniqueKey(),
                 child: TextFormField(
                   controller: resume.skillTextControllers[index],
+                  enabled: resume.sectionVisible(Strings.skills),
                   decoration: InputDecoration(
                     border: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(10),
@@ -354,9 +359,9 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
               child: ExperienceEntry(
                 portrait: widget.portrait,
                 experience: resume.experiences[index],
-                onSubmitted: (_) {
-                  resume.rebuild();
-                },
+                onSubmitted: (_) => resume.rebuild,
+                onRemove: () =>
+                    resume.onDeleteExperience(resume.experiences[index]),
               ),
             );
           },
@@ -393,9 +398,9 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
               child: EducationEntry(
                 portrait: widget.portrait,
                 education: resume.educationHistory[index],
-                onSubmitted: (_) {
-                  resume.rebuild();
-                },
+                onSubmitted: (_) => resume.rebuild(),
+                onRemove: () =>
+                    resume.onDeleteEducation(resume.educationHistory[index]),
               ),
             );
           },
@@ -447,6 +452,11 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
                 child: CustomEntry(
                   portrait: widget.portrait,
                   genericSection: genericSection[index],
+                  onRemove: () {
+                    resume.onDeleteCustomSectionEntry(
+                        genericSection[index], title);
+                  },
+                  enableEditing: resume.sectionVisible(title),
                   onSubmitted: (_) {
                     resume.rebuild();
                   },
@@ -480,39 +490,6 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
         );
       },
       child: child,
-    );
-  }
-
-  /// A confirmation dialog for deleting a custom section.
-  Widget deleteSectionConfirmationDialog(
-      {required BuildContext context,
-      required Resume resume,
-      required String sectionName}) {
-    return AlertDialog(
-      title: Text(Strings.deleteSection(sectionName)),
-      content: const Text(
-        Strings.deleteSectionWarning,
-      ),
-      actions: <Widget>[
-        TextButton(
-          onPressed: () {
-            Navigator.of(context).pop();
-          },
-          child: const Text(Strings.cancel),
-        ),
-        TextButton(
-          onPressed: () {
-            resume.onDeleteCustomSection(sectionName);
-            Navigator.of(context).pop();
-          },
-          style: TextButton.styleFrom(
-            foregroundColor: Colors.red,
-          ),
-          child: const Text(
-            Strings.delete,
-          ),
-        ),
-      ],
     );
   }
 
@@ -558,7 +535,7 @@ class _ResumeInputFormState extends State<ResumeInputForm> {
                     OutlinedButton(
                       onPressed: resume.addCustomSection,
                       child: Text(
-                        Strings.addNewSection.toUpperCase(),
+                        Strings.addCustomSection.toUpperCase(),
                       ),
                     ),
                     const SizedBox(height: 50),

@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 /// A professional experience entry.
-class Experience extends ChangeNotifier {
+class Experience {
   Experience({
     String? company,
     String? position,
@@ -47,6 +47,17 @@ class Experience extends ChangeNotifier {
 
   /// The controller for the description field.
   TextEditingController descriptionController = TextEditingController();
+
+  /// Whether the entry is visible.
+  bool _visible = true;
+
+  /// Whether the entry is visible.
+  bool get visible => _visible;
+
+  /// Toggle the visibility of the entry.
+  void toggleVisibility() {
+    _visible = !_visible;
+  }
 
   /// Return a map of the experience.
   Map<String, dynamic> toMap() {

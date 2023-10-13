@@ -1,7 +1,7 @@
 import 'package:flutter/cupertino.dart';
 
 /// A generic entry that can be used for custom sections.
-class GenericEntry extends ChangeNotifier {
+class GenericEntry {
   GenericEntry({
     String? title,
     String? subtitle,
@@ -47,6 +47,17 @@ class GenericEntry extends ChangeNotifier {
 
   /// The controller for the location field.
   TextEditingController locationController = TextEditingController();
+
+  /// Whether the entry is visible.
+  bool _visible = true;
+
+  /// Whether the entry is visible.
+  bool get visible => _visible;
+
+  /// Toggle the visibility of the entry.
+  void toggleVisibility() {
+    _visible = !_visible;
+  }
 
   /// Return a map of the generic entry.
   Map<String, dynamic> toMap() {

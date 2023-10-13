@@ -9,6 +9,7 @@ class DateRangeEntry extends StatelessWidget {
     required this.startDateController,
     required this.endDateController,
     required this.onSubmitted,
+    required this.enableEditing,
   });
 
   /// The controller for the start date.
@@ -20,6 +21,9 @@ class DateRangeEntry extends StatelessWidget {
   /// The callback when the user submits the text field.
   final Function(String?)? onSubmitted;
 
+  /// Whether the text fields are enabled.
+  final bool enableEditing;
+
   @override
   Widget build(BuildContext context) {
     return Row(
@@ -29,17 +33,27 @@ class DateRangeEntry extends StatelessWidget {
             controller: startDateController,
             label: Strings.startDate,
             onSubmitted: onSubmitted,
+            enabled: enableEditing,
           ),
         ),
-        const Padding(
-          padding: EdgeInsets.all(4.0),
-          child: Text('-'),
+        Padding(
+          padding: const EdgeInsets.all(4.0),
+          child: Text(
+            '-',
+            style: TextStyle(
+              color: Theme.of(context)
+                  .colorScheme
+                  .secondary
+                  .withOpacity(enableEditing ? 0.5 : 0.25),
+            ),
+          ),
         ),
         Expanded(
           child: GenericTextField(
             controller: endDateController,
             label: Strings.endDate,
             onSubmitted: onSubmitted,
+            enabled: enableEditing,
           ),
         ),
       ],

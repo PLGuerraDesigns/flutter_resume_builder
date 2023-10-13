@@ -7,7 +7,7 @@ class Contact {
     IconData? iconData,
   }) {
     textController.text = value ?? '';
-    this.iconData = iconData ?? CupertinoIcons.phone;
+    this.iconData = iconData ?? CupertinoIcons.minus;
   }
 
   /// Return a contact from a map.
@@ -24,7 +24,7 @@ class Contact {
   TextEditingController textController = TextEditingController();
 
   /// The icon to display for this contact.
-  IconData iconData = CupertinoIcons.phone;
+  late IconData iconData;
 
   /// Return a map of the contact.
   Map<String, dynamic> toMap() {

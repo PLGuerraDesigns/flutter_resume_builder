@@ -162,7 +162,7 @@ class PDFGenerator {
             children: <Widget>[
               _sectionLabel(sectionName),
               for (final Map<String, GenericEntry> genericSection
-                  in resume.customSections)
+                  in resume.visibleCustomSections)
                 if (genericSection.keys.first == sectionName)
                   _genericEntryDetails(genericSection.values.first)
             ],
@@ -231,7 +231,7 @@ class PDFGenerator {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         _sectionLabel(Strings.experience),
-        for (final Experience experience in resume.experiences)
+        for (final Experience experience in resume.visibleExperiences)
           _experienceEntryDetails(experience)
       ],
     );
@@ -303,7 +303,7 @@ class PDFGenerator {
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: <Widget>[
         _sectionLabel(Strings.education),
-        for (final Education education in resume.educationHistory)
+        for (final Education education in resume.visibleEducation)
           _educationEntryDetails(education)
       ],
     );

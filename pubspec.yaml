@@ -3,7 +3,7 @@ description: A resume builder app made with flutter.
 
 publish_to: "none"
 
-version: 0.3.2+6
+version: 0.4.0+7
 
 environment:
   sdk: ">=3.0.6 <4.0.0"
@@ -25,7 +25,7 @@ dependencies:
   flutter_reorderable_grid_view: ^4.0.0
   file_picker: ^5.5.0
   url_launcher: ^6.1.14
-  package_info_plus: ^5.0.0
+  package_info_plus: ^4.1.0
   csv: ^5.0.2
   archive: ^3.4.5
 

@@ -27,15 +27,20 @@ class Resume extends ChangeNotifier {
     this.lastModified = lastModified ?? DateTime.now();
     nameController.text = name ?? '';
     locationController.text = location ?? '';
-    this.contactList = contactList ?? List<Contact>.filled(4, Contact());
+    this.contactList =
+        contactList ?? <Contact>[Contact(), Contact(), Contact(), Contact()];
     this.experiences = experiences ?? <Experience>[Experience()];
-    this.educationHistory =
-        educationHistory ?? List<Education>.filled(2, Education());
+    this.educationHistory = educationHistory ?? <Education>[Education()];
     skillTextControllers = skills != null
         ? skills.map((String e) => TextEditingController(text: e)).toList()
-        : <TextEditingController>[];
+        : <TextEditingController>[TextEditingController()];
     this.customSections = customSections ?? <Map<String, GenericEntry>>[];
-    this.sectionOrder = sectionOrder ?? <String>[];
+    this.sectionOrder = sectionOrder ??
+        <String>[
+          'Skills',
+          'Experience',
+          'Education',
+        ];
     _hiddenSections = hiddenSections ?? <String>[];
   }
 
@@ -101,8 +106,16 @@ class Resume extends ChangeNotifier {
   /// The list of professional experiences.
   List<Experience> experiences = <Experience>[];
 
+  /// The list of visible experiences.
+  List<Experience> get visibleExperiences =>
+      experiences.where((Experience e) => e.visible).toList();
+
   /// The educational history.
   List<Education> educationHistory = <Education>[];
+
+  /// The list of visible education entries.
+  List<Education> get visibleEducation =>
+      educationHistory.where((Education e) => e.visible).toList();
 
   /// The list of skills.
   List<TextEditingController> skillTextControllers = <TextEditingController>[];
@@ -110,6 +123,11 @@ class Resume extends ChangeNotifier {
   /// The list of custom (user-defined) sections.
   List<Map<String, GenericEntry>> customSections =
       <Map<String, GenericEntry>>[];
+
+  /// The list of visible custom sections.
+  List<Map<String, GenericEntry>> get visibleCustomSections => customSections
+      .where((Map<String, GenericEntry> e) => e.values.first.visible)
+      .toList();
 
   /// The order of the sections.
   List<String> sectionOrder = <String>[];
@@ -268,6 +286,28 @@ class Resume extends ChangeNotifier {
     customSections.removeWhere((Map<String, GenericEntry> element) =>
         element.containsKey(sectionName));
 
+    notifyListeners();
+  }
+
+  /// Delete a custom section entry.
+  void onDeleteCustomSectionEntry(GenericEntry entry, String sectionName) {
+    customSections
+        .where((Map<String, GenericEntry> element) =>
+            element.containsKey(sectionName))
+        .first
+        .removeWhere((String key, GenericEntry value) => value == entry);
+    notifyListeners();
+  }
+
+  /// Delete a contact.
+  void onDeleteExperience(Experience experience) {
+    experiences.remove(experience);
+    notifyListeners();
+  }
+
+  /// Delete an education entry.
+  void onDeleteEducation(Education education) {
+    educationHistory.remove(education);
     notifyListeners();
   }
 

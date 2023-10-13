@@ -20,6 +20,7 @@ class PortraitDrawer extends StatelessWidget {
   /// The action items to display in the drawer.
   final List<Widget> actionItems;
 
+  /// The project version info handler.
   final ProjectVersionInfoHandler projectVersionInfoHandler;
 
   @override

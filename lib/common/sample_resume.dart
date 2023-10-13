@@ -27,7 +27,10 @@ class SampleResume extends Resume {
               value: 'linkedin.com/in/jdoe',
               iconData: CupertinoIcons.link,
             ),
-            Contact(value: '123-456-7890'),
+            Contact(
+              value: '123-456-7890',
+              iconData: CupertinoIcons.phone,
+            ),
             Contact(
               value: 'example.com/portfolio/jdoe',
               iconData: CupertinoIcons.globe,

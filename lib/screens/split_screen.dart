@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:pdf/pdf.dart';
+import 'package:printing/printing.dart';
 import 'package:provider/provider.dart';
 
 import '../common/sample_resume.dart';
@@ -9,6 +11,8 @@ import '../services/file_handler.dart';
 import '../services/pdf_generator.dart';
 import '../services/project_info.dart';
 import '../services/redirect_handler.dart';
+import '../widgets/about_dialog.dart';
+import '../widgets/confirmation_dialog.dart';
 import '../widgets/portrait_drawer.dart';
 import 'input_form.dart';
 import 'pdf_viewer.dart';
@@ -53,12 +57,144 @@ class SplitScreenState extends State<SplitScreen>
 
   /// The landscape layout of the split view.
   Widget _landscapeLayout() {
+    String firstWordOnly(String text) => text.split(' ').first.toUpperCase();
+
+    void _printPDF() async {
+      await Printing.layoutPdf(
+          onLayout: (PdfPageFormat format) =>
+              pdfGenerator.generateResumeAsPDF());
+    }
+
     return Row(
       children: <Widget>[
+        NavigationRail(
+          selectedIndex: 0,
+          elevation: 12,
+          useIndicator: false,
+          labelType: NavigationRailLabelType.all,
+          backgroundColor: Theme.of(context).colorScheme.surface,
+          onDestinationSelected: (int index) {
+            switch (index) {
+              case 0:
+                {
+                  _resume = Resume();
+                  pdfGenerator = PDFGenerator(resume: _resume);
+                  _formScrollController.animateTo(
+                    0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOut,
+                  );
+                  setState(() {});
+                }
+              case 1:
+                _printPDF();
+              case 2:
+                FileHandler().downloadFiles(
+                    pdfGenerator: pdfGenerator,
+                    projectVersionInfoHandler: projectInfoHandler);
+              case 3:
+                FileHandler().importResume().then((dynamic result) {
+                  if (result != null) {
+                    setState(() {
+                      _resume = Resume.fromMap(
+                          (result as Map<String, dynamic>)['resume']
+                              as Map<String, dynamic>);
+                      pdfGenerator = PDFGenerator(resume: _resume);
+                    });
+                  } else {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(Strings.noValidJsonFile,
+                            style: Theme.of(context).textTheme.bodyMedium),
+                        duration: const Duration(seconds: 2),
+                        backgroundColor: Colors.red[700],
+                      ),
+                    );
+                  }
+                });
+              case 4:
+                showDialog(
+                    context: context,
+                    builder: (BuildContext context) {
+                      return CustomAboutDialog(
+                        projectInfoHandler: projectInfoHandler,
+                      );
+                    });
+              case 5:
+                RedirectHandler.openUrl(Strings.sourceCodeUrl);
+              case 6:
+                RedirectHandler.openUrl(Strings.sponsorUrl);
+            }
+          },
+          destinations: <NavigationRailDestination>[
+            NavigationRailDestination(
+              icon: const Tooltip(
+                  message: Strings.clearResume, child: Icon(Icons.restart_alt)),
+              label: Text(
+                firstWordOnly(Strings.clearResume),
+              ),
+            ),
+            NavigationRailDestination(
+              icon: const Tooltip(
+                message: Strings.printPDF,
+                child: Icon(Icons.print),
+              ),
+              label: Text(
+                firstWordOnly(Strings.printPDF),
+              ),
+            ),
+            NavigationRailDestination(
+              icon: const Tooltip(
+                message: Strings.downloadPdfAndJson,
+                child: Icon(Icons.download),
+              ),
+              label: Text(
+                firstWordOnly(Strings.downloadPdfAndJson),
+              ),
+            ),
+            NavigationRailDestination(
+              icon: const Tooltip(
+                message: Strings.importJson,
+                child: Icon(Icons.upload_file),
+              ),
+              label: Text(
+                firstWordOnly(Strings.importJson),
+              ),
+            ),
+            NavigationRailDestination(
+              icon: const Tooltip(
+                message: Strings.aboutThisProject,
+                child: Icon(Icons.info),
+              ),
+              label: Text(
+                firstWordOnly(Strings.aboutThisProject),
+              ),
+            ),
+            NavigationRailDestination(
+              icon: const Tooltip(
+                message: Strings.contributeCode,
+                child: Icon(Icons.code),
+              ),
+              label: Text(
+                firstWordOnly(Strings.contributeCode),
+              ),
+            ),
+            NavigationRailDestination(
+              icon: const Tooltip(
+                message: Strings.donate,
+                child: Icon(Icons.attach_money),
+              ),
+              label: Text(
+                firstWordOnly(Strings.donate),
+              ),
+            ),
+          ],
+        ),
         Expanded(
-            child: ResumeInputForm(
-          scrollController: _formScrollController,
-        )),
+          child: ResumeInputForm(
+            scrollController: _formScrollController,
+          ),
+        ),
         Expanded(
           child: Stack(
             children: <Widget>[
@@ -139,181 +275,53 @@ class SplitScreenState extends State<SplitScreen>
     );
   }
 
-  /// Displays an about dialog containing information about the project and
-  /// more options.
-  void _showAboutDialog({required bool portraitMode}) {
-    showDialog(
-        context: context,
-        builder: (BuildContext context) {
-          return AlertDialog(
-            insetPadding: portraitMode
-                ? const EdgeInsets.symmetric(horizontal: 30.0, vertical: 24.0)
-                : const EdgeInsets.symmetric(horizontal: 150, vertical: 100),
-            title: Row(
-              mainAxisAlignment: MainAxisAlignment.center,
-              children: <Widget>[
-                Image.asset(
-                  Strings.iconPath,
-                  height: 50,
-                  width: 50,
-                ),
-                const SizedBox(width: 10),
-                Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: <Widget>[
-                    Text(
-                      Strings.flutterResumeBuilder,
-                      style: Theme.of(context).textTheme.titleLarge,
-                    ),
-                    Text(
-                      projectInfoHandler.fullVersion,
-                      style: Theme.of(context).textTheme.labelMedium,
-                    ),
-                  ],
-                ),
-              ],
-            ),
-            content: Text(
-              Strings.projectInfo,
-              textAlign: TextAlign.center,
-              style: Theme.of(context).textTheme.bodyMedium,
-            ),
-            actions: <Widget>[
-              TextButton(
-                child: Text(Strings.moreProjects.toUpperCase()),
-                onPressed: () {
-                  Navigator.pop(context);
-                  RedirectHandler.openUrl(Strings.portfolioUrl);
-                },
-              ),
-              TextButton(
-                child: Text(Strings.licenses.toUpperCase()),
-                onPressed: () {
-                  Navigator.pop(context);
-                  showLicensePage(
-                    context: context,
-                    applicationName: Strings.flutterResumeBuilder,
-                    applicationVersion: projectInfoHandler.version,
-                    applicationLegalese: Strings.copyRight('2021'),
-                  );
-                },
-              ),
-              TextButton(
-                onPressed: () => Navigator.pop(context),
-                child: const Text(Strings.ok),
-              ),
-            ],
-          );
-        });
-  }
-
-  /// The action items to display in the drawer or popup menu.
-  List<Widget> _actionItems({required bool portraitMode}) {
-    if (portraitMode) {
-      return <Widget>[
-        _listOption(
-          context: context,
-          title: Strings.importResume.toUpperCase(),
-          iconData: Icons.upload,
-          onTap: () {
-            Navigator.pop(context);
-            FileHandler().importResume().then((dynamic result) {
-              if (result != null) {
-                setState(() {
-                  _resume = Resume.fromMap(
-                      (result as Map<String, dynamic>)['resume']
-                          as Map<String, dynamic>);
-                  pdfGenerator = PDFGenerator(resume: _resume);
-                });
-              }
-            });
-          },
-        ),
-        _listOption(
-          context: context,
-          title: Strings.downloadFiles,
-          iconData: Icons.download,
-          onTap: () {
-            Navigator.pop(context);
-            FileHandler().downloadFiles(
-                pdfGenerator: pdfGenerator,
-                projectVersionInfoHandler: projectInfoHandler);
-          },
-        ),
-        _listOption(
-          context: context,
-          title: Strings.aboutThisProject.toUpperCase(),
-          iconData: Icons.info,
-          onTap: () {
-            Navigator.pop(context);
-            _showAboutDialog(portraitMode: portraitMode);
-          },
-        ),
-        _listOption(
-          context: context,
-          title: Strings.contributeCode.toUpperCase(),
-          iconData: Icons.code,
-          onTap: () {
-            Navigator.pop(context);
-            RedirectHandler.openUrl(Strings.sourceCodeUrl);
-          },
-        ),
-        _listOption(
-          context: context,
-          title: Strings.projectDonation.toUpperCase(),
-          iconData: Icons.attach_money,
-          onTap: () {
-            Navigator.pop(context);
-            RedirectHandler.openUrl(Strings.sponsorUrl);
-          },
-        ),
-      ];
-    }
+  /// The action items to display in the drawer
+  List<Widget> _drawerActions() {
     return <Widget>[
-      IconButton(
-        icon: const Icon(Icons.download),
-        tooltip: Strings.downloadFiles,
-        onPressed: () => FileHandler().downloadFiles(
-          pdfGenerator: pdfGenerator,
-          projectVersionInfoHandler: projectInfoHandler,
-        ),
+      _listOption(
+        context: context,
+        title: Strings.printPDF,
+        iconData: Icons.print,
+        onTap: () async {
+          Navigator.pop(context);
+          await Printing.layoutPdf(
+              onLayout: (PdfPageFormat format) =>
+                  pdfGenerator.generateResumeAsPDF());
+        },
       ),
-      IconButton(
-        icon: const Icon(Icons.info),
-        tooltip: Strings.aboutThisProject.toUpperCase(),
-        onPressed: () => _showAboutDialog(portraitMode: portraitMode),
-      ),
-      PopupMenuButton<String>(
-        tooltip: Strings.moreOptions.toUpperCase(),
-        itemBuilder: (BuildContext context) => <PopupMenuEntry<String>>[
-          PopupMenuItem<String>(
-            padding: EdgeInsets.zero,
-            child: _listOption(
-                context: context,
-                title: Strings.contributeCode.toUpperCase(),
-                iconData: Icons.code,
-                onTap: () {
-                  Navigator.pop(context);
-                  RedirectHandler.openUrl(Strings.sourceCodeUrl);
-                }),
-            onTap: () {},
-          ),
-          PopupMenuItem<String>(
-            padding: EdgeInsets.zero,
-            child: _listOption(
+      _listOption(
+        context: context,
+        title: Strings.aboutThisProject.toUpperCase(),
+        iconData: Icons.info,
+        onTap: () {
+          Navigator.pop(context);
+          showDialog(
               context: context,
-              title: Strings.projectDonation.toUpperCase(),
-              iconData: Icons.attach_money,
-              onTap: () {
-                Navigator.pop(context);
-                RedirectHandler.openUrl(Strings.sponsorUrl);
-              },
-            ),
-            onTap: () {},
-          ),
-        ],
+              builder: (BuildContext context) {
+                return CustomAboutDialog(
+                  projectInfoHandler: projectInfoHandler,
+                );
+              });
+        },
       ),
-      const SizedBox(width: 10),
+      _listOption(
+        context: context,
+        title: Strings.contributeCode.toUpperCase(),
+        iconData: Icons.code,
+        onTap: () {
+          Navigator.pop(context);
+          RedirectHandler.openUrl(Strings.sourceCodeUrl);
+        },
+      ),
+      _listOption(
+        context: context,
+        title: Strings.donate.toUpperCase(),
+        iconData: Icons.attach_money,
+        onTap: () {
+          Navigator.pop(context);
+          RedirectHandler.openUrl(Strings.sponsorUrl);
+        },
+      ),
     ];
   }
 
@@ -335,7 +343,7 @@ class SplitScreenState extends State<SplitScreen>
                 ? null
                 : PortraitDrawer(
                     pdfGenerator: pdfGenerator,
-                    actionItems: _actionItems(portraitMode: true),
+                    actionItems: _drawerActions(),
                     projectVersionInfoHandler: projectInfoHandler,
                   ),
             appBar: AppBar(
@@ -362,11 +370,71 @@ class SplitScreenState extends State<SplitScreen>
                             ),
                       ),
                     ),
+                  const Spacer(),
+                  if (orientation == Orientation.portrait)
+                    IconButton(
+                      icon: const Icon(Icons.restart_alt),
+                      tooltip: Strings.clearResume,
+                      onPressed: () async {
+                        showDialog(
+                          context: context,
+                          builder: (BuildContext context) => ConfirmationDialog(
+                            title: Strings.clearResume,
+                            content: Strings.clearResumeWarning,
+                            confirmText: Strings.clear,
+                            onConfirm: () {
+                              _resume = Resume();
+                              pdfGenerator = PDFGenerator(resume: _resume);
+                              _formScrollController.animateTo(
+                                0,
+                                duration: const Duration(milliseconds: 300),
+                                curve: Curves.easeOut,
+                              );
+                              setState(() {});
+                            },
+                          ),
+                        );
+                      },
+                    ),
+                  if (orientation == Orientation.portrait)
+                    IconButton(
+                      icon: const Icon(Icons.upload_file),
+                      tooltip: Strings.importJson,
+                      onPressed: () {
+                        FileHandler().importResume().then((dynamic result) {
+                          if (result != null) {
+                            setState(() {
+                              _resume = Resume.fromMap(
+                                  (result as Map<String, dynamic>)['resume']
+                                      as Map<String, dynamic>);
+                              pdfGenerator = PDFGenerator(resume: _resume);
+                            });
+                          } else {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(Strings.noValidJsonFile,
+                                    style:
+                                        Theme.of(context).textTheme.bodyMedium),
+                                duration: const Duration(seconds: 2),
+                                backgroundColor: Colors.red[700],
+                              ),
+                            );
+                          }
+                        });
+                      },
+                    ),
+                  if (orientation == Orientation.portrait)
+                    IconButton(
+                      icon: const Icon(Icons.download),
+                      tooltip: Strings.downloadPdfAndJson,
+                      onPressed: () {
+                        FileHandler().downloadFiles(
+                            pdfGenerator: pdfGenerator,
+                            projectVersionInfoHandler: projectInfoHandler);
+                      },
+                    ),
                 ],
               ),
-              actions: orientation == Orientation.landscape
-                  ? _actionItems(portraitMode: false)
-                  : null,
               centerTitle: false,
             ),
             body: Consumer<Resume>(

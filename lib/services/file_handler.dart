@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:html' as html;
 
 import 'package:file_picker/file_picker.dart';
+import 'package:flutter/material.dart';
 
 import 'pdf_generator.dart';
 import 'project_info.dart';
@@ -54,14 +55,18 @@ class FileHandler {
 
   /// Import the resume JSON file.
   Future<dynamic> importResume() async {
-    final FilePickerResult? result = await FilePicker.platform.pickFiles(
-      type: FileType.custom,
-      allowedExtensions: <String>['json'],
-    );
+    try {
+      final FilePickerResult? result = await FilePicker.platform.pickFiles(
+        type: FileType.custom,
+        allowedExtensions: <String>['json'],
+      );
 
-    if (result != null) {
-      final String content = utf8.decode(result.files.first.bytes!);
-      return jsonDecode(content);
+      if (result != null) {
+        final String content = utf8.decode(result.files.first.bytes!);
+        return jsonDecode(content);
+      }
+    } catch (e) {
+      debugPrint(e.toString());
     }
     return null;
   }
