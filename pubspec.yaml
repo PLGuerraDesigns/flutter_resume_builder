@@ -3,7 +3,7 @@ description: A resume builder app made with flutter.
 
 publish_to: "none"
 
-version: 0.4.1+8
+version: 0.4.2+9
 
 environment:
   sdk: ">=3.0.6 <4.0.0"
@@ -21,7 +21,6 @@ dependencies:
   flutter_form_builder: ^9.1.1
   font_awesome_flutter: ^10.1.0
   syncfusion_flutter_pdfviewer: ^23.1.39
-  syncfusion_flutter_datepicker: ^23.1.39
   flutter_reorderable_grid_view: ^4.0.0
   file_picker: ^5.5.0
   url_launcher: ^6.1.14

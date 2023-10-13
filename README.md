@@ -1,24 +1,27 @@
 # Flutter Resume Builder
 
-This project is currently in development.
+The Flutter Resume Builder, crafted by Pablo L. Guerra, is an
+open-source initiative aimed at offering users a user-friendly, web-based
+resume builder that is both free and capable of producing polished resumes.
 
-This resume builder is built using Flutter and is designed to be hosted for
-free on GitHub Pages. It is designed to be a simple, easy to use resume builder
-allowing users to quickly create a predefined resume template.
+## Start Building Your Resume:
+
+https://plguerradesigns.github.io/flutter_resume_builder/
 
 ## Features:
 
 - Create Resume
 - Edit Resume
-- Download Resume as PDF
+- Download Resume as PDF and JSON
+- Import Resume as JSON
+- Print Resume
 
 ## Planned Features:
 
-- Import Resume as CSV
-- Export Resume as CSV
-- Multiple Resume Support
+- Multiple Pages
+- Resume Variations
 
-## Getting Started:
+## Getting Started (Dev):
 
 ### Install Flutter:
 
@@ -34,3 +37,6 @@ flutter run
 
 Flutter Documentation:
 https://docs.flutter.dev/get-started/learn-more
+
+Syncfusion Flutter Widgets:
+https://www.syncfusion.com/flutter-widgets
