@@ -215,6 +215,7 @@ class PDFGenerator {
                 padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
                 child: Text(
                   genericSection.descriptionController.text,
+                  textAlign: TextAlign.justify,
                   style: const TextStyle(
                     fontSize: 12,
                     color: PdfColor(0.15, 0.15, 0.15),
@@ -244,6 +245,7 @@ class PDFGenerator {
             experience.descriptionController.text.isEmpty
         ? Container()
         : Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -277,22 +279,18 @@ class PDFGenerator {
                     ),
                   ],
                 ),
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  Padding(
-                    padding:
-                        const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
-                    child: Text(
-                      experience.descriptionController.text,
-                      style: const TextStyle(
-                        fontSize: 12,
-                        color: PdfColor(0.15, 0.15, 0.15),
-                      ),
-                    ),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 2, vertical: 2),
+                child: Text(
+                  experience.descriptionController.text,
+                  textAlign: TextAlign.justify,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    color: PdfColor(0.15, 0.15, 0.15),
                   ),
-                ],
+                ),
               ),
+              SizedBox(height: 4),
             ],
           );
   }
@@ -365,13 +363,13 @@ class PDFGenerator {
   }
 
   /// The resume footer.
-  Widget _footer() {
+  Widget _footer({required int currentPage, required int totalPages}) {
     return Stack(
       children: <Widget>[
         Align(
           alignment: Alignment.bottomCenter,
           child: Text(
-            '${resume.nameController.text} - Page 1 / 1',
+            '${resume.nameController.text} - Page $currentPage / $totalPages',
             style:
                 const TextStyle(color: PdfColor(0.5, 0.5, 0.5), fontSize: 10),
           ),
@@ -416,30 +414,28 @@ class PDFGenerator {
     final Document pdf = Document();
 
     pdf.addPage(
-      Page(
+      MultiPage(
         theme: ThemeData.withFont(
           base: await PdfGoogleFonts.robotoRegular(),
           bold: await PdfGoogleFonts.robotoBold(),
           icons: await PdfGoogleFonts.cupertinoIcons(),
         ),
         pageFormat: PdfPageFormat.letter,
-        margin: const EdgeInsets.only(top: 50, left: 50, right: 50, bottom: 25),
-        build: (Context context) {
-          return Stack(
-            alignment: Alignment.bottomCenter,
-            children: <Widget>[
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.stretch,
-                children: <Widget>[
-                  _header(),
-                  ..._getOrderedSections(),
-                ],
-              ),
-              _footer(),
-            ],
-          );
+        margin: const EdgeInsets.only(top: 30, left: 50, right: 50, bottom: 25),
+        header: (Context context) {
+          if (context.pageNumber == 1) {
+            return _header();
+          }
+          return Container();
         },
-        clip: true,
+        build: (Context context) => _getOrderedSections(),
+        footer: (Context context) => Align(
+          alignment: Alignment.bottomCenter,
+          child: _footer(
+            currentPage: context.pageNumber,
+            totalPages: context.pagesCount,
+          ),
+        ),
       ),
     );
     return pdf.save();
