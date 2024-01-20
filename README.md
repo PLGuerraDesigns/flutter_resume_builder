@@ -18,7 +18,6 @@ https://plguerradesigns.github.io/flutter_resume_builder/
 
 ## Planned Features:
 
-- Multiple Pages
 - Resume Variations
 
 ## Showcase:
