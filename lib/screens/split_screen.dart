@@ -195,15 +195,6 @@ class SplitScreenState extends State<SplitScreen>
             firstWordOnly(Strings.contributeCode),
           ),
         ),
-        NavigationRailDestination(
-          icon: const Tooltip(
-            message: Strings.donate,
-            child: Icon(Icons.attach_money),
-          ),
-          label: Text(
-            firstWordOnly(Strings.donate),
-          ),
-        ),
       ],
     );
   }
@@ -342,15 +333,6 @@ class SplitScreenState extends State<SplitScreen>
         onTap: () {
           Navigator.pop(context);
           RedirectHandler.openUrl(Strings.sourceCodeUrl);
-        },
-      ),
-      _listOption(
-        context: context,
-        title: Strings.donate.toUpperCase(),
-        iconData: Icons.attach_money,
-        onTap: () {
-          Navigator.pop(context);
-          RedirectHandler.openUrl(Strings.sponsorUrl);
         },
       ),
     ];

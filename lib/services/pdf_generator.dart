@@ -192,7 +192,10 @@ class PDFGenerator {
                         genericSection.startDateController.text,
                         genericSection.endDateController.text,
                       ),
-                      style: const TextStyle(fontSize: 12),
+                      style: TextStyle(
+                        fontSize: 12,
+                        fontWeight: FontWeight.bold,
+                      ),
                     ),
                   ],
                 ),
@@ -203,11 +206,9 @@ class PDFGenerator {
                   children: <Widget>[
                     Text(
                       genericSection.subtitleController.text,
-                      style: TextStyle(fontWeight: FontWeight.bold),
                     ),
                     Text(
                       genericSection.locationController.text,
-                      style: const TextStyle(fontSize: 12),
                     ),
                   ],
                 ),
@@ -355,7 +356,8 @@ class PDFGenerator {
                         iterator < resume.skillTextControllers.length;
                         iterator++)
                       Text(
-                        '${resume.skillTextControllers[iterator].text}${iterator + 1 < resume.skillTextControllers.length && resume.skillTextControllers[iterator + 1].text.isNotEmpty ? " • " : ""}',
+                        '${resume.skillTextControllers[iterator].text}${iterator + 1 < resume.skillTextControllers.length && resume.skillTextControllers[iterator + 1].text.isNotEmpty ? ", " : ""}',
+                        textAlign: TextAlign.justify,
                       )
                   ],
                 )
@@ -421,7 +423,7 @@ class PDFGenerator {
           icons: await PdfGoogleFonts.cupertinoIcons(),
         ),
         pageFormat: PdfPageFormat.letter,
-        margin: const EdgeInsets.only(top: 30, left: 50, right: 50, bottom: 25),
+        margin: const EdgeInsets.only(top: 30, left: 45, right: 45, bottom: 25),
         header: (Context context) {
           if (context.pageNumber == 1) {
             return _header();
