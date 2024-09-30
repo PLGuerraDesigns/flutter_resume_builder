@@ -59,3 +59,7 @@ https://docs.flutter.dev/get-started/learn-more
 
 Syncfusion Flutter Widgets:
 https://www.syncfusion.com/flutter-widgets
+
+## Contributing:
+
+If you'd like to contribute, please fork the repository and open a pull request to the `main` branch.
